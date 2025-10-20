@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+# from typing import Optional
 import pandas as pd
 import os
 
@@ -12,16 +12,21 @@ from my_package.data_visualization import (
     salary_hist_image, salary_box_image
 )
 
+from database.database import (
+    init_database, create_index, query_2_df, insert_record
+)
+
+local_ip_address = 'http://127.0.0.1'
 try :
     with open('.env.local', 'r') as f:
         for line in f:
             if 'http' in line:
                 local_ip_address = line.strip()
                 break
-except :
-    local_ip_address = 'http://127.0.0.1'
+except FileNotFoundError:
+    pass
 finally :
-    local_ip_address_port = local_ip_address + ':3000'
+    local_ip_address_port = f"{local_ip_address}:3000"
 
 app = FastAPI()
 
@@ -36,8 +41,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-print(f"CORS allow IP:")
-print(f"  http://localhost:3000")
+print("CORS allow IP:")
+print("  http://localhost:3000")
 print(f"  {local_ip_address_port}")
 
 
@@ -67,9 +72,6 @@ class SalaryInput(BaseModel):
 # print(df)
 
 ## sql
-from database.database import (
-    init_database, create_index, query_2_df, insert_record
-)
 # root_dir_path = os.getcwd().split('/backend')[0]
 # backend_dir_path = os.path.join(root_dir_path, 'backend')
 database_dir_path = os.path.join(os.getcwd(), 'database')
@@ -79,10 +81,10 @@ create_index('job_title', 'idx_job_title',
              db=db_file_path)
 create_index('education_level', 'idx_education_level',
              db=db_file_path)
-create_index('salary', 'idx_salary', db=db_file_path)    
+create_index('salary', 'idx_salary', db=db_file_path)
 # df = query_2_df("select * from salary", db_file_path)
 # print(df)
-    
+
 
 ## file path
 current_dir_path = os.getcwd()
@@ -154,7 +156,7 @@ async def reset():
                 db=db_file_path)
     create_index('education_level', 'idx_education_level',
                 db=db_file_path)
-    create_index('salary', 'idx_salary', db=db_file_path)    
+    create_index('salary', 'idx_salary', db=db_file_path)
     # df = query_2_df("select * from salary;", db_file_path)
     # data_df = pd.DataFrame([data.model_dump()])
     # data_df = cleaning_data(data_df)
