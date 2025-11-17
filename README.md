@@ -1,4 +1,4 @@
-# 📈 Salary Prediction
+# 📈 Salary Prediction Web Application
 
 A self-hosted full-stack web application that predicts your salary
 based on user input using machine learning models. Includes dynamc retraining, interactive data visualization, and modular architecture built for sclability.
@@ -34,7 +34,7 @@ based on user input using machine learning models. Includes dynamc retraining, i
 - **Hyperparameter Optimization**
     - `BayesSearchCV` for scikit-learn models
     - `Keras Tuner` for MLP neural network
-- **Data persistence**——SQLite 
+- **Data persistence**——SQLite
 - **Data visualization**——matplotlib and seaborn libraies
 - **Containerized development**——Docker
 
@@ -116,7 +116,7 @@ Check version with:
 ```
 Replace `[tool]` with `python`, `node`, `npm`, etc.
 
-### • 🔐 Clone the repo:  
+### • 🔐 Clone the repo:
 
 ```sh
 # SSH:
@@ -126,7 +126,7 @@ git clone git@github.com:StevenHuang41/salary_prediction.git
 git clone https://github.com/StevenHuang41/salary_prediction.git
 
 cd salary_prediction
-```  
+```
 
 ---
 
@@ -145,7 +145,7 @@ cd salary_prediction
     cd frontend
     npm install
     cd ..
-    ```  
+    ```
 
 - #### Backend Installation:
     ```sh
@@ -159,7 +159,7 @@ cd salary_prediction
     # or use uv to install packages (install uv first) faster than pip install
     curl -LsSf https://astral.sh/uv/install.sh | sh
     cd backend
-    uv sync --locked 
+    uv sync --locked
     cd ..
     ```
 
@@ -183,7 +183,7 @@ cd salary_prediction
         npm test
         ```
 
-        **Expected result:**  
+        **Expected result:**
         ![frontend test](./readme_images/frontend_test.png)
 
     ---
@@ -195,7 +195,7 @@ cd salary_prediction
         npm run dev
         ```
 
-        expected result:  
+        expected result:
         ![frontend server](./readme_images/frontend_server.png)
 
     ---
@@ -212,7 +212,7 @@ cd salary_prediction
         uv run main.py 8001
         ```
 
-        expected result:  
+        expected result:
         ![backend server](./readme_images/backend_server.png)
 
     ---
@@ -223,10 +223,10 @@ cd salary_prediction
         cd backend
         python main.py 8000
 
-        # or use uv to run 
+        # or use uv to run
         uv run main.py 8000
         ```
-        expected result:  
+        expected result:
         ![training server](./readme_images/training_server.png)
 
 ---
@@ -241,7 +241,7 @@ cd salary_prediction
 ```
 `./setup build` will create .env.local and run `docker compose up --build`, which automatically installs packages, creates environment and runs the app.
 
-see `./setup --help` for further setup shell script imformations  
+see `./setup --help` for further setup shell script imformations
 
 **Expected result:**
 ![setup build](./readme_images/setup_build.png)
@@ -249,7 +249,7 @@ see `./setup --help` for further setup shell script imformations
 wait until all servers are successfully built, and then click the URL in the next section
 
 
-## 🚀 Usage 
+## 🚀 Usage
 
 ### 🖥️ Local Machine Access
 
@@ -289,7 +289,7 @@ wait until all servers are successfully built, and then click the URL in the nex
 - Change predict value using keyborad or slider
 ![instruction3](./readme_images/instruction3.gif)
 
-- Click **Add Data** button to store changed prediction 
+- Click **Add Data** button to store changed prediction
 ![instruction4](./readme_images/instruction4.gif)
 
 - Click **Retrain Model** button to train on new records
@@ -331,13 +331,13 @@ wait until all servers are successfully built, and then click the URL in the nex
 
 ## 📄 License
 
-This project is licensed under the [MIT License](./LICENSE).  
+This project is licensed under the [MIT License](./LICENSE).
 
 ## 👏 Credits
 
 Thanks to all contributors!
 
-[<img src="https://github.com/StevenHuang41.png" width="50"/>](https://github.com/StevenHuang41)  [<img src="https://github.com/evelynhuang22.png" width="50"/>](https://github.com/evelynhuang22) 
+[<img src="https://github.com/StevenHuang41.png" width="50"/>](https://github.com/StevenHuang41)  [<img src="https://github.com/evelynhuang22.png" width="50"/>](https://github.com/evelynhuang22)
 
 
 See the [contributors list](https://github.com/StevenHuang41/salary_prediction/graphs/contributors)
