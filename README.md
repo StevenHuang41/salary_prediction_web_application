@@ -125,7 +125,7 @@ Check version with:
 ```
 Replace `[tool]` with `python`, `node`, `npm`, etc.
 
-### • 🔐 Clone the repo:  
+### • 🔐 Clone the repo:
 
 ```sh
 # SSH:
@@ -135,7 +135,7 @@ git clone git@github.com:StevenHuang41/salary_prediction_web_application.git
 git clone https://github.com/StevenHuang41/salary_prediction_web_application.git
 
 cd salary_prediction
-```  
+```
 
 ---
 
@@ -183,7 +183,7 @@ cd salary_prediction
         npm test
         ```
 
-        **Expected result:**  
+        **Expected result:**
         ![frontend test](./readme_images/frontend_test.png)
 
     ---
@@ -195,7 +195,7 @@ cd salary_prediction
         npm run dev
         ```
 
-        expected result:  
+        expected result:
         ![frontend server](./readme_images/frontend_server.png)
 
     ---
@@ -212,7 +212,7 @@ cd salary_prediction
         uv run main.py 8001
         ```
 
-        expected result:  
+        expected result:
         ![backend server](./readme_images/backend_server.png)
 
     ---
@@ -223,10 +223,10 @@ cd salary_prediction
         cd backend
         python main.py 8000
 
-        # or use uv to run 
+        # or use uv to run
         uv run main.py 8000
         ```
-        expected result:  
+        expected result:
         ![training server](./readme_images/training_server.png)
 
 ---
@@ -250,7 +250,7 @@ This performs:
 ![setup build](./readme_images/setup_build.png)
 
 
-## 🚀 Usage 
+## 🚀 Usage
 
 ### 🖥️ Local Machine
 
@@ -288,7 +288,7 @@ This performs:
 - Change predict value using keyborad or slider
 ![instruction3](./readme_images/instruction3.gif)
 
-- Click **Add Data** button to store changed prediction 
+- Click **Add Data** button to store changed prediction
 ![instruction4](./readme_images/instruction4.gif)
 
 - Click **Retrain Model** button to train on new records
@@ -332,13 +332,13 @@ This performs:
 
 ## 📄 License
 
-This project is licensed under the [MIT License](./LICENSE).  
+This project is licensed under the [MIT License](./LICENSE).
 
 ## 👏 Credits
 
 Thanks to all contributors!
 
-[<img src="https://github.com/StevenHuang41.png" width="50"/>](https://github.com/StevenHuang41)  [<img src="https://github.com/evelynhuang22.png" width="50"/>](https://github.com/evelynhuang22) 
+[<img src="https://github.com/StevenHuang41.png" width="50"/>](https://github.com/StevenHuang41)  [<img src="https://github.com/evelynhuang22.png" width="50"/>](https://github.com/evelynhuang22)
 
 
 See the [contributors list](https://github.com/StevenHuang41/salary_prediction/graphs/contributors)
