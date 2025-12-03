@@ -34,6 +34,9 @@ def cleaning_salary(df: pd.DataFrame) -> pd.DataFrame:
 def cleaning_NaN(df: pd.DataFrame) -> None:
     df.dropna(inplace=True)
 
+## remove duplicated
+def cleaning_duplicated(df: pd.DataFrame) -> None:
+    df.drop_duplicates(inplace=True)
 
 ## col: age
 def cleaning_age(df: pd.DataFrame) -> None:
@@ -121,6 +124,7 @@ def cleaning_data(df: pd.DataFrame,
         df = cleaning_salary(df)
     else :
         cleaning_NaN(df)
+        cleaning_duplicated(df)
     cleaning_age(df)
     cleaning_gender(df)
     cleaning_edu(df)
@@ -178,4 +182,15 @@ if __name__ == "__main__":
     #     'salary': [9_000, 300_000, 100_000]
     # })
     # print(cleaning_data(data3, has_target_columns=True))
+
+    ## test 4
+    # duplicated
+    # data1 = pd.DataFrame({
+    #     "Age": [20, 20],
+    #     "gender": ["Female", "Female"],
+    #     "education level": ["PhD", "PhD"],
+    #     "Job title": ["Data Engineer", "Data Engineer"],
+    #     "years of experience": [1, 1],
+    # })
+    # print(cleaning_data(data1))
     pass
