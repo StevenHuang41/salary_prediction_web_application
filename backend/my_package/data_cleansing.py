@@ -40,7 +40,7 @@ def cleaning_duplicated(df: pd.DataFrame) -> None:
 
 ## col: age
 def cleaning_age(df: pd.DataFrame) -> None:
-    df['age'] = df['age'].astype('int32')
+    df['age'] = df['age'].astype('int')
     # print("Data Cleansing: cleaning age - Successful")
 
 
@@ -52,9 +52,11 @@ def cleaning_gender(df: pd.DataFrame) -> None:
         'Female': 'female',
         'Other': 'other'
     }
-    df['gender'] = df['gender'] \
-                    .map(mapping) \
-                    .fillna(df['gender'])
+    df['gender'] = (
+        df['gender']
+        .map(mapping)
+        .fillna(df['gender'])
+    )
 
     df['gender'] = pd.Categorical(
         df['gender'],
@@ -75,15 +77,15 @@ def cleaning_edu(df: pd.DataFrame) -> None:
             education_level_str.str.contains('high school', na=False),
         ],
         choicelist=[
-            'Bachelor',
-            'Master',
-            'PhD',
-            'High School'
+            'bachelor',
+            'master',
+            'phd',
+            'high school'
         ],
-        default='No Specified',
+        default='unknown',
     )
 
-    edu_order = ['No Specified', 'High School', 'Bachelor', 'Master', 'PhD']
+    edu_order = ['unknown', 'high school', 'bachelor', 'master', 'phd']
 
     df['education_level'] = pd.Categorical(
         df['education_level'],
@@ -99,8 +101,11 @@ def cleaning_edu(df: pd.DataFrame) -> None:
 def cleaning_job(df: pd.DataFrame) -> None:
     df['job_title'] = (
         df['job_title']
-        # .str
-        # .replace(r'\b(Junior|Juniour|Senior)\b\s+', '', regex=True)
+        .str.lower()
+        .str.replace(r'juniour', 'junior', regex=True)
+        .str.replace(r'rep\b', 'representative', regex=True)
+        .str.replace(r'\bman\b', 'manager', regex=True)
+        .str.replace(r'director of (.*)$', r'\1 director', regex=True)
         .str.strip()
         .astype('str')
     )
@@ -152,15 +157,15 @@ def clean_directory(dir_path: str) -> None:
 
 if __name__ == "__main__":
 
-    ## test 1
-    # data1 = pd.DataFrame([{
-    #     'Age': 20,
-    #     'gender': 'Female',
-    #     'education level': 'PhD',
-    #     'Job title': 'Data Engineer',
-    #     'years of experience': 1,
-    # }])
-    # print(cleaning_data(data1))
+    # test 1
+    data1 = pd.DataFrame([{
+        'Age': 20,
+        'gender': 'Female',
+        'education level': 'PhD',
+        'Job title': 'Data Engineer',
+        'years of experience': 1,
+    }])
+    print(cleaning_data(data1))
 
     # test 2
     # data2 = pd.DataFrame({
