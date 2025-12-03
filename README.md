@@ -1,12 +1,9 @@
-# 📈 Salary Prediction
+# 📈 Salary Prediction Web Application
 
-A self-hosted full-stack web application that predicts your salary
-based on user input using machine learning models. Includes dynamc retraining, interactive data visualization, and modular architecture built for sclability.
+A full-stack machine learning application that predicts real-time salary predictions through a production-ready pipeline.
+This project includes automated data preprocessing, feature engineering, hyperparameter optimization, model retraining, and interactive UI –– all containerized for scalable deployment.
 
-<!-- [![GitHub stars](https://img.shields.io/github/stars/StevenHuang41/salary_prediction)](https://github.com/StevenHuang41/salary_prediction/stargazers) -->
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-![number of visitors](https://visitor-badge.laobi.icu/badge?page_id=StevenHuange41.salary_prediction)
-
 
 ## 🔎 Overview
 
@@ -26,27 +23,39 @@ based on user input using machine learning models. Includes dynamc retraining, i
 
 ## ✨ Features
 
-- **Interactive frontend** with clean UI
-- **Real-time** salary predictions
-- **Editable** prediction values and retraining
-- **Data preprocessing**——cleaning, encoding, and feature engineering
-- **Automated model selection**
-- **Hyperparameter Optimization**
-    - `BayesSearchCV` for scikit-learn models
-    - `Keras Tuner` for MLP neural network
-- **Data persistence**——SQLite 
-- **Data visualization**——matplotlib and seaborn libraies
-- **Containerized development**——Docker
+- **End-to-End Machine Learning System**
+    - Automated data preprocessing (cleaning, enocding, feature engineering)
+    - Dynamic feature generation and model retraining
+    
+- **Advanced Model Optimization**
+    - Bayesian optimization (BayesSearchCV)
+    - Multiple ML backends (scikit-learn, Keras/TensorFlow)
+
+- **Interactive Web Application**
+    - Responsive UI built with React + Bootstrap
+    - Editable predictions
+    - User-driven retraining workflow
+    - Interactive visualizations with matplotlib & seaborn
+    
+- **Data infrastructure**
+    - SQLite-based persistent storage
+    - Auto-update training/test splits
+    - Incremental data ingestion
+
+- **Containerized Development**
+    - Dockerized frontend & backend
+    - One-command setup view ./setup
+    - Works on local machine or LAN network (mobile supported)
 
 ## 🛠 Tech Stack
 
 | Layer | Tools |
 | :---: | :--- |
 | **Frontend:** | React / Vite / Vitest / Bootstrap|
-| **Backend:** | Python / FastAPI / uvicorn |
-| **Database:** | Sqlite3 / Pandas |
-| **ML:** | scikit-learn / Tensorflow / Keras Tuner / BayesSearchCV |
-| **Other:** | Docker / Git / Bash / uv|
+| **Backend:** | Python / FastAPI / Uvicorn |
+| **Database:** | SQLite3 / Pandas |
+| **ML / Optimization:** | scikit-learn / Tensorflow / Keras Tuner / BayesSearchCV |
+| **DevOps:** | Docker / Git / Bash / uv|
 
 ## 📁 Project Structure
 
@@ -56,9 +65,9 @@ based on user input using machine learning models. Includes dynamc retraining, i
 .
 ├── README.md
 ├── docker-compose.yml
-├── setup
-├── frontend/
-├── backend/
+├── setup               # utility setup script
+├── frontend/           # React application
+├── backend/            # FastAPI server + ML pipeline
 ├── readme_images/
 └── .gitignore
 ```
@@ -100,15 +109,15 @@ backend/
 
 ### • 🧩 Prerequisites
 
-- **Python:** >=3.8
+- **Python:** >=3.10
 
-- **Node.js:** >=20.9.0 (LTS recommended)
+- **Node.js:** >=20.9.0
 
 - **npm:** >=10.0.0
 
-- (Optional) **[uv](https://github.com/astral-sh/uv/)** for faster python packages installation.
+- (Optional) **[uv](https://github.com/astral-sh/uv/)** (for faster python packages installation)
 
-- (Optional) **[Docker](https://www.docker.com/)** for containerized setup.
+- (Optional) **[Docker](https://www.docker.com/)** (for containerized setup)
 
 Check version with:
 ```sh
@@ -120,10 +129,10 @@ Replace `[tool]` with `python`, `node`, `npm`, etc.
 
 ```sh
 # SSH:
-git clone git@github.com:StevenHuang41/salary_prediction.git
+git clone git@github.com:StevenHuang41/salary_prediction_web_application.git
 
 # or HTTPS:
-git clone https://github.com/StevenHuang41/salary_prediction.git
+git clone https://github.com/StevenHuang41/salary_prediction_web_application.git
 
 cd salary_prediction
 ```  
@@ -140,27 +149,18 @@ cd salary_prediction
 
 ### 1. 🕹️ Manual
 
-- #### Frontend Installation:
+- #### Frontend
     ```sh
     cd frontend
     npm install
-    cd ..
     ```  
 
-- #### Backend Installation:
+- #### Backend
     ```sh
     cd backend
-
-    # make sure you activated a virtual environment
     pip install -r requirements.txt
-
-    cd ..
-
-    # or use uv to install packages (install uv first) faster than pip install
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    cd backend
+    # or using uv
     uv sync --locked 
-    cd ..
     ```
 
 - #### Setup
@@ -231,32 +231,31 @@ cd salary_prediction
 
 ---
 
-### 2. 🐳 Docker
-
-Docker handles packages installation & setup, which is much easier than manual installation.
+### 2. 🐳 Docker Setup (Recommended)
 
 ```sh
-cd salary_prediction
 ./setup build
 ```
-`./setup build` will create .env.local and run `docker compose up --build`, which automatically installs packages, creates environment and runs the app.
-
 see `./setup --help` for further setup shell script imformations  
+
+This performs:
+
+✅ `.env.local` generation <br>
+✅ `docker compose up --build` <br>
+✅ Fully automated environment setup
+
+
 
 **Expected result:**
 ![setup build](./readme_images/setup_build.png)
 
-wait until all servers are successfully built, and then click the URL in the next section
-
 
 ## 🚀 Usage 
 
-### 🖥️ Local Machine Access
+### 🖥️ Local Machine
 
 - **Frontend:** <http://localhost:3000>
-
 - **Backend:** <http://localhost:8001/docs>
-
 - **Training:** <http://localhost:8000/docs>
 
 **UI preview:**
@@ -307,27 +306,29 @@ wait until all servers are successfully built, and then click the URL in the nex
 - Allow input of job title by keyborad (accept unknown jobs).
 - A chatbot for user asking questions.
 
+## 🛠 Development Workflow
+- Git-based feature branches
+- Dockerized reproducible environments
+- ML pipeline modularized in `my_package`
+- Auto-retraining compatible with both scikit-learn and TensorFlow pipelines
+
 ## 🤝 Contributing
 
-1. Fork the repository.
-2. Clone your fork to your local machine.
-   ```sh
-   git clone https://github.com/[your-username/repo-name].git
-   cd [repo-name]
-   ```
+1. Fork
+2. Clone
 3. Create a new branch
    ```sh
    git switch -c feature-branch
    ```
-4. Commit your changes
+4. Commit changes
    ```sh
    git commit -m "Add some feature"
    ```
-5. Push to the branch
+5. Push
    ```sh
    git push origin feature-branch
    ```
-6. Create a new Pull Request.
+6. Create a Pull Request.
 
 ## 📄 License
 
