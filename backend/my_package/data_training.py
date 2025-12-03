@@ -293,8 +293,8 @@ def model_select(X_train, y_train, X_test, y_test, store_file) -> str:
             model.fit(train_X, y_train)
             y_pred = model.predict(test_X)
             
-            model_name = f'{config['name']}{'_poly' if use_poly else ''}'
-            params = dict(getattr(model, 'best_params_', {}))
+            model_name = f"{config['name']}{'_poly' if use_poly else ''}"
+            params = dict(getattr(model, "best_params_", {}))
 
         # neural model
         else : 
@@ -303,7 +303,7 @@ def model_select(X_train, y_train, X_test, y_test, store_file) -> str:
             )
             y_pred = model.predict(test_X, verbose=-1)
 
-            model_name = f'NN_model{'_poly' if use_poly else ''}'
+            model_name = f"NN_model{'_poly' if use_poly else ''}"
             params = dict(NN_params)
 
         models_storage[model_name] = {
@@ -351,15 +351,15 @@ if __name__ == "__main__":
     from data_spliting import spliting_data
 
     ## load csv 
-    p_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
-    FILE_PATH = os.path.join(p_dir, 'database/Salary_Data.csv')
+    p_dir = os.path.abspath(os.path.join(os.getcwd(), ".."))
+    FILE_PATH = os.path.join(p_dir, "database/Salary_Data.csv")
     df = pd.read_csv(FILE_PATH, delimiter=',')
     df = cleaning_data(df, has_target_columns=True)
 
     X_train, X_test, y_train, y_test = spliting_data(df)
 
     # test 
-    store_file_name = 'best'
+    store_file_name = "best"
 
     model_name, model = \
         model_select(X_train, y_train, X_test, y_test, store_file_name)
