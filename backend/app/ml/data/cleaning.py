@@ -13,7 +13,7 @@ def clean_target_col(
         df.columns
         .str.strip()
         .str.lower()
-        .str.replace(r"\s+", " ")
+        .str.replace(r"\s+", " ", regex=True)
         .str.replace(" ", "_")
     )
     
@@ -24,9 +24,8 @@ def clean_target_col(
     df = df.drop_duplicates(ignore_index=True)
     
     # handle outliers
-    df['salary'] = df['salary'].astype('float64')
-    df = df[(df['salary'] > lower_bound) & (df['salary'] < upper_bound)]
-    
+    df.loc[:, 'salary'] = df['salary'].astype('float64')
+    df = df[(df['salary'] >= lower_bound) & (df['salary'] <= upper_bound)]
     
     return df
 
@@ -35,7 +34,7 @@ def clean_feature_cols(df: pd.DataFrame) -> pd.DataFrame:
         df.columns
         .str.strip()
         .str.lower()
-        .str.replace(r"\s+", " ")
+        .str.replace(r"\s+", " ", regex=True)
         .str.replace(" ", "_")
     )
     # col: age
@@ -43,7 +42,18 @@ def clean_feature_cols(df: pd.DataFrame) -> pd.DataFrame:
 
     # col: gender
     gen_order = ['female', 'male', 'other']
-    df.loc[:, 'gender'] = df['gender'].str.lower()
+    df.loc[:, 'gender'] = (
+        df['gender']
+        .str.lower()
+        .str.strip()
+        .fillna("other")
+        .replace({
+            r'^fe.*': 'female',
+            r'^m.*': 'male',
+            r'^other$': 'other',
+        }, regex=True)
+    )
+    
     df.loc[:, 'gender'] = pd.Categorical(
         df['gender'],
         categories=gen_order,
@@ -59,6 +69,7 @@ def clean_feature_cols(df: pd.DataFrame) -> pd.DataFrame:
             'mast.*': 'master',
             'phd|doctor': 'phd',
             'high.*': 'high school',
+            'other': 'unknown',
             np.nan: 'unknown',
         }, regex=True)
     )
@@ -79,15 +90,18 @@ def clean_feature_cols(df: pd.DataFrame) -> pd.DataFrame:
 
     # filter: age and years of experience validity
     df = df[(df['age'] - df['years_of_experience']) >= 18]
+    
+    # filter: not accept education_level having 'unknown'
+    df = df[~(df.education_level == 'unknown')]
 
     return df
 
 ## Whole Cleansing process
 def clean_data(df: pd.DataFrame, has_target_col: bool = False) -> pd.DataFrame:
+    df = clean_feature_cols(df)
+
     if has_target_col:
         df = clean_target_col(df)
-        
-    df = clean_feature_cols(df)
 
     return df
 
@@ -104,49 +118,3 @@ def clean_data(df: pd.DataFrame, has_target_col: bool = False) -> pd.DataFrame:
 #         except Exception as e:
 #             print(f"Failed to delete {file_path}, {e}")
 
-
-if __name__ == "__main__":
-
-    # test 1: column name lowercase
-    # data1 = pd.DataFrame([{
-    #     'Age': 20,
-    #     'gender': 'Female',
-    #     'education level': 'PhD',
-    #     'Job title': 'Data Engineer',
-    #     'years of experience': 1,
-    # }])
-    # print(clean_data(data1))
-
-    # test 2
-    # data2 = pd.DataFrame({
-    #     'Age': [20, 19],
-    #     'gender': ['Female', 'male'],
-    #     'education level': ["master's degree", 'PhD'],
-    #     'Job title': ['Data Engineer', 'Data Analyst'],
-    #     'years of experience': [2, 1]
-    # })
-    # print(clean_data(data2))
-
-    ## test 3
-    # data3 = pd.DataFrame({
-    #     'Age': [20, 19, 28, 18],
-    #     'gender': ['Female', 'male', 'other', 'Female'],
-    #     'education level': ["master's degree", 'other', 'PhD', 'Master'],
-    #     'Job title': ['Data Scientist', 'Data Engineer', 'Data Analyst', 'Accountant'],
-    #     'years of experience': [2, 1, 3, 10],
-    #     'salary': [9_000, 300_000, 100_000, 111_000]
-    # })
-    # print(clean_data(data3, has_target_col=True))
-    # only row2 would pass
-
-    ## test 4: duplicated
-    data4 = pd.DataFrame({
-        "Age": [20, 20],
-        "gender": ["Female", "Female"],
-        "education level": ["PhD", "PhD"],
-        "Job title": ["Data Engineer", "Data Engineer"],
-        "years of experience": [1, 1],
-        "salary": [100_000, 100_000],
-    })
-    print(clean_data(data4, has_target_col=True))
-    pass

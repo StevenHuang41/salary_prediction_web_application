@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from sklearn.preprocessing import (
     OneHotEncoder,
@@ -8,165 +9,168 @@ from sklearn.preprocessing import (
     Normalizer,
     PolynomialFeatures,
 )
-from sklearn.feature_extraction.text import TfidfVectorizer
+from app.ml.preprocessing.transformers import (
+    TfidfWrapper,
+    MathTransformer,
+    TextEncoder,
+    FeatureCreation,
+)
 from category_encoders import TargetEncoder
 
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn import set_config
 
-class TfidfWrapper(BaseEstimator, TransformerMixin):
-    def __init__(self, max_features=64):
-        self.max_features = max_features
-        self.vectorizer = TfidfVectorizer(max_features=max_features)
+from typing import Literal
+
+
+#     X_train: pd.DataFrame,
+#     y_train: pd.DataFrame | pd.Series,
+#     data: pd.DataFrame,
+#     *,
+#     use_polynomial: bool = False,
+# ) -> tuple[pd.DataFrame, ...] | pd.DataFrame:
+    # set_config(transform_output='pandas')
     
-    def _ensure_series(self, X):
-        if isinstance(X, pd.DataFrame):
-            return X.iloc[:, 0].astype(str)
-        elif isinstance(X, pd.Series):
-            return X.astype(str)
-        elif isinstance(X, (list, tuple)):
-            return pd.Series(X).astype(str)
-        elif isinstance(X, str):
-            return pd.Series([X])
-        else:  # numpy array
-            return pd.Series(X).astype(str)
+def get_numeric_pipeline(
+    *,
+    use_scaler: bool,
+    scaler: Literal['standard', 'minmax'],
+    math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None,
+):
+    steps = []
 
-    def fit(self, X, y=None):
-        X_series = self._ensure_series(X)
-        # X_series = X.squeeze().astype(str)
-        self.vectorizer.fit(X_series)
-        return self
-
-    def transform(self, X):
-        X_series = self._ensure_series(X)
-        # X_series = X.squeeze()
-        return self.vectorizer.transform(X_series).toarray()
+    if math_method is not None:
+        steps.append(('math', MathTransformer(method=math_method)))
+        
+    if use_scaler:
+        if scaler == 'standard':
+            scaler_object = StandardScaler()
+        else :
+            scaler_object = MinMaxScaler()
+            
+        steps.append(('scaler', scaler_object))
+        
+    if not steps:
+        return 'passthrough'
     
-    def get_feature_names_out(self, input_features=None):
-        return self.vectorizer.get_feature_names_out()
+    return Pipeline(steps)
+
+edu_order = ['high school', 'bachelor', 'master', 'phd']
+seniority_order = ['junior', 'mid', 'senior', 'director', 'vp_clevel_principal']
+
+def get_ordinal_pipeline(
+    *,
+    use_scaler: bool,
+    scaler: Literal['standard', 'minmax'],
+    order_list: list[str],
+):
+    steps = [('ordiE', OrdinalEncoder(categories=[order_list]))]
+    if use_scaler:
+        if scaler == 'standard':
+            scaler_object = StandardScaler()
+        else :
+            scaler_object = MinMaxScaler()
+            
+        steps.append(('scaler', scaler_object))
+    
+    return Pipeline(steps)
+
+def scaler_wrapper(
+    transformer,
+    *,
+    use_scaler: bool,
+    scaler: Literal['standard', 'minmax'],
+    # math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None,
+    # order_list: list[str],
+):
+    steps = [('transformer', transformer)]
+
+
+
+
+
+
+
+
+
+
+    if use_scaler:
+        if scaler == 'standard':
+            scaler_object = StandardScaler()
+        else :
+            scaler_object = MinMaxScaler()
+            
+        steps.append(('scaler', scaler_object))
+    
+
 
 
 ## preprocess
-def preprocess_data(
-    X_train: pd.DataFrame,
-    y_train: pd.DataFrame | pd.Series,
-    data: pd.DataFrame,
+def build_preprocessor(
     *,
-    use_polynomial: bool = False,
-) -> tuple[pd.DataFrame, ...] | pd.DataFrame:
-
-    numeric_cols = ['age', 'years_of_experience']
-    onehot_cols = ['gender']
-    ordinal_cols = ['education_level']
-    ordinal_order = ['unknown',
-                     'high school',
-                     'bachelor',
-                     'master',
-                     'phd']
-
-    target_cols = ['job_title']
-
-    set_config(transform_output='pandas')
-
-    numeric_pipe = Pipeline([
-        ('scaler', MinMaxScaler()),
-    ])
-
-    onehot_pipe = Pipeline([
-        ('one_hot_encoder', OneHotEncoder(sparse_output=False,
-                                  handle_unknown='ignore'))
-    ])
-
-    ordinal_pipe = Pipeline([
-        ('ordinal_encoder', OrdinalEncoder(categories=[ordinal_order]))
-    ])
-
-    target_pipe = Pipeline([
-        ('target_encoder', TargetEncoder()),
-        ('target_scaler', MinMaxScaler()),
+    use_scaler: bool = True,
+    scaler: Literal["standard", "minmax"] = "standard",
+    # math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None = None,
+):
+    
+    age_pipe = get_numeric_pipeline(
+        use_scaler=use_scaler,
+        scaler=scaler,
+        math_method='1/x',
+    )
+    
+    gen_pipe = Pipeline([
+        ('gen_OHE', OneHotEncoder(drop='first', sparse_output=False)),
     ])
     
-    title_pipe = Pipeline([
-        ('job', TfidfWrapper(max_features=64)),
+    edu_pipe = get_ordinal_pipeline(
+        use_scaler=use_scaler,
+        scaler=scaler,
+        order_list=edu_order,
+    )
+    
+    job_pipe = Pipeline([
+        ('job_encode', TfidfWrapper(max_features=64)),
     ])
 
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numeric_pipe, numeric_cols),
-            ('cat_1', onehot_pipe, onehot_cols),
-            ('cat_2', ordinal_pipe, ordinal_cols),
-            ('target', target_pipe, target_cols),
-            ('job', title_pipe, ['job_title']),
-        ],
-        remainder='passthrough',
-        verbose_feature_names_out=False,
-        sparse_threshold=0,
+    edu_pipe = get_ordinal_pipeline(
+        use_scaler=use_scaler,
+        scaler=scaler,
+        order_list=seniority_order,
+    )
+    
+    group_pipe = Pipeline([
+        ('group', TargetEncoder()),
+    ])
+    
+    year_pipe = get_numeric_pipeline(
+        use_scaler=use_scaler,
+        scaler=scaler,
+        math_method='sqrt',
     )
 
-    X_train_ = preprocessor.fit_transform(X_train, y_train)
+    preprocess_trans_pipe = ColumnTransformer([
+        ('age', age_pipe, ['age']),
 
-    data_ = preprocessor.transform(data)
+        ('gender', gen_pipe, ['gender']),
 
-    if use_polynomial:
-        poly_cols = X_train_.columns.difference(['gender_female',
-                                                 'gender_male',
-                                                 'gender_other'])
+        ('edu_ordiE', edu_pipe, ['education_level']),
 
-        poly_pipe = Pipeline([
-            ('poly', PolynomialFeatures(degree=2, include_bias=False)),
-            ('scaler', MinMaxScaler()),
-        ])
+        ('job', job_pipe, ['job_title']),
 
-        poly_transformer = ColumnTransformer(
-            transformers=[
-                ('num_poly', poly_pipe, poly_cols),
-            ],
-            remainder='passthrough',
-            verbose_feature_names_out=False,
-            sparse_threshold=0,
-        )
+        ('seniority', seniority_pipe, ['job_seniority']),
 
-        X_train_ = poly_transformer.fit_transform(X_train_, y_train)
-        data_ = poly_transformer.transform(data_)
+        ('group', group_pipe, ['job_group']),
+        
+        ('year_mathT', year_pipe, ['years_of_experience']),
 
-    return X_train_, data_
+    ], verbose_feature_names_out=False, sparse_threshold=0)
 
 
-if __name__ == "__main__":
-    from data_cleansing import cleaning_data
-    from data_spliting import spliting_data
+    full_pipe = Pipeline([
+        ('f_seniority', FeatureCreation('seniority')),
+        ('f_group', FeatureCreation('group')),
+        ('preprocess', preprocess_trans_pipe),
+    ])
 
-    ## load csv 
-    FILE_NAME = "../database/Salary_Data.csv"
-    df = pd.read_csv(FILE_NAME, delimiter=',')
-    df = cleaning_data(df, has_target_columns=True)
-    X_train, X_test, y_train, y_test = spliting_data(df)
-    print(X_train)
-    print(X_test)
-
-    # # test 1
-    # X_train_, X_test_ = preprocess_data(X_train, y_train, X_test,
-    #                                     use_polynomial=True)
-    # print(X_train_)
-    # print(X_test_)
-    # test 2
-    X_train_, X_test_ = preprocess_data(X_train, y_train, X_test, use_polynomial=False)
-    print(X_train_)
-    print(X_test_)
-
-    # exam = pd.DataFrame([{
-    #     'age': 20,
-    #     'gender': 'female',
-    #     'education_level': 'PhD',
-    #     'job_title': 'Data Engineer',
-    #     'years_of_experience': 1,
-    # }])
-    # # test 3
-    # _, exam_ = preprocess_data(X_train, y_train, exam, use_polynomial=True)
-    # print(exam_)
-    # # test 4
-    # _, exam_ = preprocess_data(X_train, y_train, exam, use_polynomial=False)
-    # print(exam_)
-    pass
+    return full_pipe
