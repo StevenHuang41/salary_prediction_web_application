@@ -31,17 +31,33 @@ from typing import Literal
 # ) -> tuple[pd.DataFrame, ...] | pd.DataFrame:
     # set_config(transform_output='pandas')
     
-def get_numeric_pipeline(
+
+edu_order = ['high school', 'bachelor', 'master', 'phd']
+seniority_order = ['junior', 'mid', 'senior', 'director', 'vp_clevel_principal']
+
+def scaler_wrapper(
+    trans_type: Literal['math', 'OHE', 'ordinal', 'tfidf', 'target'],
+    math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None = None,
+    order_list: list[str] | None = None,
     *,
     use_scaler: bool,
     scaler: Literal['standard', 'minmax'],
-    math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None,
 ):
     steps = []
+    if trans_type == 'math':
+        steps.append(('mathT', MathTransformer(method=math_method)))
+    elif trans_type == 'OHE':
+        steps.append(('OHE', OneHotEncoder(drop='first', sparse_output=True)))
+        return Pipeline(steps)
+    elif trans_type == 'ordinal':
+        steps.append(('ordinal', OrdinalEncoder(categories=[order_list])))
+    elif trans_type == 'tfidf':
+        steps.append(('tfidf', TfidfWrapper(max_features=64)))
+        return Pipeline(steps)
+    elif trans_type == 'target':
+        steps.append(('target', TargetEncoder()))
+        return Pipeline(steps)
 
-    if math_method is not None:
-        steps.append(('math', MathTransformer(method=math_method)))
-        
     if use_scaler:
         if scaler == 'standard':
             scaler_object = StandardScaler()
@@ -49,104 +65,56 @@ def get_numeric_pipeline(
             scaler_object = MinMaxScaler()
             
         steps.append(('scaler', scaler_object))
-        
+
     if not steps:
         return 'passthrough'
     
     return Pipeline(steps)
 
-edu_order = ['high school', 'bachelor', 'master', 'phd']
-seniority_order = ['junior', 'mid', 'senior', 'director', 'vp_clevel_principal']
-
-def get_ordinal_pipeline(
-    *,
-    use_scaler: bool,
-    scaler: Literal['standard', 'minmax'],
-    order_list: list[str],
-):
-    steps = [('ordiE', OrdinalEncoder(categories=[order_list]))]
-    if use_scaler:
-        if scaler == 'standard':
-            scaler_object = StandardScaler()
-        else :
-            scaler_object = MinMaxScaler()
-            
-        steps.append(('scaler', scaler_object))
-    
-    return Pipeline(steps)
-
-def scaler_wrapper(
-    transformer,
-    *,
-    use_scaler: bool,
-    scaler: Literal['standard', 'minmax'],
-    # math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None,
-    # order_list: list[str],
-):
-    steps = [('transformer', transformer)]
-
-
-
-
-
-
-
-
-
-
-    if use_scaler:
-        if scaler == 'standard':
-            scaler_object = StandardScaler()
-        else :
-            scaler_object = MinMaxScaler()
-            
-        steps.append(('scaler', scaler_object))
-    
-
-
-
-## preprocess
 def build_preprocessor(
     *,
-    use_scaler: bool = True,
-    scaler: Literal["standard", "minmax"] = "standard",
-    # math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None = None,
+    use_scaler: bool,
+    scaler: Literal["standard", "minmax"],
 ):
     
-    age_pipe = get_numeric_pipeline(
-        use_scaler=use_scaler,
-        scaler=scaler,
+    age_pipe = scaler_wrapper(
+        trans_type='math',
         math_method='1/x',
-    )
-    
-    gen_pipe = Pipeline([
-        ('gen_OHE', OneHotEncoder(drop='first', sparse_output=False)),
-    ])
-    
-    edu_pipe = get_ordinal_pipeline(
         use_scaler=use_scaler,
         scaler=scaler,
+    )
+    
+    gen_pipe = scaler_wrapper(
+        trans_type='OHE',
+    )
+    
+    edu_pipe = scaler_wrapper(
+        trans_type='ordinal',
         order_list=edu_order,
+        use_scaler=use_scaler,
+        scaler=scaler,
     )
     
-    job_pipe = Pipeline([
-        ('job_encode', TfidfWrapper(max_features=64)),
-    ])
+    job_pipe = scaler_wrapper(
+        scaler=scaler,
+    )
 
-    edu_pipe = get_ordinal_pipeline(
+    seniority_pipe = scaler_wrapper(
+        trans_type='ordinal',
+        order_list=seniority_order,
         use_scaler=use_scaler,
         scaler=scaler,
-        order_list=seniority_order,
     )
     
-    group_pipe = Pipeline([
-        ('group', TargetEncoder()),
-    ])
-    
-    year_pipe = get_numeric_pipeline(
+    group_pipe = scaler_wrapper(
+        trans_type='target',
+    )   
+
+    year_pipe = scaler_wrapper(
+        trans_type='math',
+        math_method='sqrt',
         use_scaler=use_scaler,
         scaler=scaler,
-        math_method='sqrt',
     )
 
     preprocess_trans_pipe = ColumnTransformer([
