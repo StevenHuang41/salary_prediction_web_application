@@ -32,16 +32,16 @@ from typing import Literal
     # set_config(transform_output='pandas')
     
 
-edu_order = ['high school', 'bachelor', 'master', 'phd']
-seniority_order = ['junior', 'mid', 'senior', 'director', 'vp_clevel_principal']
+EDU_ORDER = ['high school', 'bachelor', 'master', 'phd']
+SENIORITY_ORDER = ['junior', 'mid', 'senior', 'director', 'vp_clevel_principal']
 
 def scaler_wrapper(
     trans_type: Literal['math', 'OHE', 'ordinal', 'tfidf', 'target'],
     math_method: Literal['log', 'sqrt', '1/x', 'square', 'cube', 'exp'] | None = None,
     order_list: list[str] | None = None,
     *,
-    use_scaler: bool,
-    scaler: Literal['standard', 'minmax'],
+    use_scaler: bool = False,
+    scaler: Literal['standard', 'minmax'] = 'standard',
 ):
     steps = []
     if trans_type == 'math':
@@ -73,8 +73,8 @@ def scaler_wrapper(
 
 def build_preprocessor(
     *,
-    use_scaler: bool,
-    scaler: Literal["standard", "minmax"],
+    use_scaler: bool = False,
+    scaler: Literal["standard", "minmax"] = 'standard',
 ):
     
     age_pipe = scaler_wrapper(
@@ -86,28 +86,34 @@ def build_preprocessor(
     
     gen_pipe = scaler_wrapper(
         trans_type='OHE',
+        use_scaler=use_scaler,
+        scaler=scaler,
     )
     
     edu_pipe = scaler_wrapper(
         trans_type='ordinal',
-        order_list=edu_order,
+        order_list=EDU_ORDER,
         use_scaler=use_scaler,
         scaler=scaler,
     )
     
     job_pipe = scaler_wrapper(
+        trans_type='tfidf',
+        use_scaler=False,
         scaler=scaler,
     )
 
     seniority_pipe = scaler_wrapper(
         trans_type='ordinal',
-        order_list=seniority_order,
+        order_list=SENIORITY_ORDER,
         use_scaler=use_scaler,
         scaler=scaler,
     )
     
     group_pipe = scaler_wrapper(
         trans_type='target',
+        use_scaler=False,
+        scaler=scaler,
     )   
 
     year_pipe = scaler_wrapper(

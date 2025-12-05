@@ -21,6 +21,7 @@ class TfidfWrapper(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         X_series = self._ensure_series(X)
         self.vectorizer.fit(X_series)
+        self.is_fitted_ = True
         return self
 
     def transform(self, X):
@@ -50,6 +51,7 @@ class MathTransformer(BaseEstimator, TransformerMixin):
 
         self.suffix_ = self.suffix if self.suffix is not None else valid_methods[self.method]
         self.origin_colname = X.columns[0]
+        self.is_fitted_ = True
         return self
     
     def transform(self, X):
@@ -91,7 +93,7 @@ class TextEncoder(BaseEstimator, TransformerMixin):
         self.regex = regex
         
     def fit(self, X, y=None):
-        self.fitted_ = True
+        self.is_fitted_ = True
         return self
     
     def transform(self, X):
@@ -128,6 +130,7 @@ class FeatureCreation(BaseEstimator, TransformerMixin):
             self.feature_name = f'is_{name}'
             
         self.input_column_names_ = X.columns
+        self.is_fitted_ = True
         return self
     
     def transform(self, X: pd.DataFrame):
