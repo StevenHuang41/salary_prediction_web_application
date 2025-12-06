@@ -28,7 +28,6 @@
 # )
 import optuna
 import numpy as np
-
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.metrics import (
     mean_squared_error,
@@ -55,9 +54,25 @@ from keras.layers import Dense, Input
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 
+def build_nn_model(trial, n_features):
+    model = Sequential([Input(shape=(n_features,))])
+    lr= trial.suggest_float("learning_rate", 1e-6, 1e-1, log=True)
 
+    n_layers = trial.suggest_int("n_layers", 1, 3)
+    for i in range(n_layers):
+        nodes = trial.suggest_int(f"n{i + 1}", 16, 64)
+        acti = trial.suggest_categorical(f"a{i + 1}", ['relu', 'tanh', 'sigmoid'])
+        model.add(Dense(nodes, activation=acti))
+        
+    model.add(Dense(1))
+    
+    model.compile(
+        optimizer=Adam(learning_rate=lr),
+        loss='mse',
+        metrics=['mae'],
+    )
 
-
+    return model
 
 def model_selection(X_train, y_train):
 
@@ -76,25 +91,6 @@ def model_selection(X_train, y_train):
 
     early_stpping = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
 
-    def build_nn_model(trial, n_features):
-        model = Sequential([Input(shape=(n_features,))])
-        lr= trial.suggest_float("learning_rate", 1e-6, 1e-1, log=True)
-
-        n_layers = trial.suggest_int("n_layers", 1, 3)
-        for i in range(n_layers):
-            nodes = trial.suggest_int(f"n{i + 1}", 16, 64)
-            acti = trial.suggest_categorical(f"a{i + 1}", ['relu', 'tanh', 'sigmoid'])
-            model.add(Dense(nodes, activation=acti))
-            
-        model.add(Dense(1))
-        
-        model.compile(
-            optimizer=Adam(learning_rate=lr),
-            loss='mse',
-            metrics=['mae'],
-        )
-
-        return model
 
     model_list = ['linear', 'ridge', 'lasso', 'elastic', 'svr', 'knn',
                   'decisionT', 'randomF', 'xgrf', 'gb', 'xggb', 'lgb', 'nn']

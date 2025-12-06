@@ -22,6 +22,7 @@ from sklearn.compose import ColumnTransformer
 
 from typing import Literal
 
+from app.ml.config import EDU_ORDER, SENIORITY_ORDER
 
 #     X_train: pd.DataFrame,
 #     y_train: pd.DataFrame | pd.Series,
