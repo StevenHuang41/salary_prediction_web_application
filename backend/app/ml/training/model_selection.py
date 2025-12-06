@@ -56,12 +56,12 @@ from keras.callbacks import EarlyStopping
 
 def build_nn_model(trial, n_features):
     model = Sequential([Input(shape=(n_features,))])
-    lr= trial.suggest_float("learning_rate", 1e-6, 1e-1, log=True)
+    lr= trial.suggest_float("nn_learning_rate", 1e-6, 1e-1, log=True)
 
-    n_layers = trial.suggest_int("n_layers", 1, 3)
+    n_layers = trial.suggest_int("nn_n_layers", 1, 3)
     for i in range(n_layers):
-        nodes = trial.suggest_int(f"n{i + 1}", 16, 64)
-        acti = trial.suggest_categorical(f"a{i + 1}", ['relu', 'tanh', 'sigmoid'])
+        nodes = trial.suggest_int(f"nn_n{i + 1}", 16, 64)
+        acti = trial.suggest_categorical(f"nn_a{i + 1}", ['relu', 'tanh', 'sigmoid'])
         model.add(Dense(nodes, activation=acti))
         
     model.add(Dense(1))
@@ -84,13 +84,11 @@ def model_selection(X_train, y_train):
             X, y,
             cv=cv,
             scoring="neg_mean_squared_error",
-            # n_jobs=-1,
         ).mean()
         
         return -score
 
     early_stpping = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
-
 
     model_list = ['linear', 'ridge', 'lasso', 'elastic', 'svr', 'knn',
                   'decisionT', 'randomF', 'xgrf', 'gb', 'xggb', 'lgb', 'nn']
@@ -111,8 +109,8 @@ def model_selection(X_train, y_train):
                 model.fit(
                     X_tra, y_tra,
                     validation_data=(X_val, y_val),
-                    epochs=trial.suggest_int("epochs", 30, 100),
-                    batch_size=trial.suggest_int("batch_size", 32, 256),
+                    epochs=trial.suggest_int(f"{model_name}_epochs", 30, 100),
+                    batch_size=trial.suggest_int(f"{model_name}_batch_size", 32, 256),
                     callbacks=[early_stpping],
                     verbose=0,
                 )
@@ -125,48 +123,48 @@ def model_selection(X_train, y_train):
             params = {}
             model = LinearRegression(**params)
         elif model_name == 'ridge':
-            params = {'alpha': trial.suggest_float('alpha', 0.1, 100, log=True)}
+            params = {'alpha': trial.suggest_float(f"{model_name}_alpha", 0.1, 100, log=True)}
             model = Ridge(**params)
         elif model_name == 'lasso':
-            params = {'alpha': trial.suggest_float('alpha', 1e-3, 1, log=True)}
+            params = {'alpha': trial.suggest_float(f"{model_name}_alpha", 1e-3, 1, log=True)}
             model = Lasso(**params)
         elif model_name == 'elastic':
             params = {
-                'alpha': trial.suggest_float('alpha', 1e-4, 1),
-                'l1_ratio': trial.suggest_float('l1_ratio', 0, 1),
+                'alpha': trial.suggest_float(f"{model_name}_alpha", 1e-4, 1),
+                'l1_ratio': trial.suggest_float(f"{model_name}_l1_ratio", 0, 1),
             }
             model = ElasticNet(**params)
         elif model_name == 'svr':
             params = {
-                'degree': trial.suggest_int('degree', 1, 5),
-                'C': trial.suggest_float('C', 0.1, 1000, log=True),
-                'epsilon': trial.suggest_float('epsilon', 1e-3, 0.1),
+                'degree': trial.suggest_int(f"{model_name}_degree", 1, 5),
+                'C': trial.suggest_float(f"{model_name}_C", 0.1, 1000, log=True),
+                'epsilon': trial.suggest_float(f"{model_name}_epsilon", 1e-3, 0.1),
             }
             model = SVR(**params)
         elif model_name == 'knn':
-            params = {'n_neighbors': trial.suggest_int('n_neighbors', 3, 50)}
+            params = {'n_neighbors': trial.suggest_int(f"{model_name}_n_neighbors", 3, 50)}
             model = KNeighborsRegressor(**params)
         elif model_name == 'decisionT':
             params = {
-                'max_depth': trial.suggest_int('max_depth', 2, 20),
-                'min_samples_split': trial.suggest_int('min_samples_split', 2, 10),
-                'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 10),
+                'max_depth': trial.suggest_int(f"{model_name}_max_depth", 2, 20),
+                'min_samples_split': trial.suggest_int(f"{model_name}_min_samples_split", 2, 10),
+                'min_samples_leaf': trial.suggest_int(f"{model_name}_min_samples_leaf", 1, 10),
             }
             model = DecisionTreeRegressor(**params)
         elif model_name == 'randomF':
             params = {
-                'n_estimators': trial.suggest_int('n_estimators', 100, 500),
-                'max_depth': trial.suggest_int('max_depth', 3, 15),
-                'min_samples_split': trial.suggest_int('min_samples_split', 2, 10),
-                'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 10),
-                'bootstrap': trial.suggest_categorical('bootstrap', [True, False])
+                'n_estimators': trial.suggest_int(f"{model_name}_n_estimators", 100, 500),
+                'max_depth': trial.suggest_int(f"{model_name}_max_depth", 3, 15),
+                'min_samples_split': trial.suggest_int(f"{model_name}_min_samples_split", 2, 10),
+                'min_samples_leaf': trial.suggest_int(f"{model_name}_min_samples_leaf", 1, 10),
+                'bootstrap': trial.suggest_categorical(f"{model_name}_bootstrap", [True, False])
             }
             model = RandomForestRegressor(**params)
         elif model_name == 'xgrf':
             params = {
-                'n_estimators': trial.suggest_int('n_estimators', 100, 1000),
-                'max_depth': trial.suggest_int('max_depth', 2, 10),
-                'subsample': trial.suggest_float('subsample', 0.1, 1),
+                'n_estimators': trial.suggest_int(f"{model_name}_n_estimators", 100, 1000),
+                'max_depth': trial.suggest_int(f"{model_name}_max_depth", 2, 10),
+                'subsample': trial.suggest_float(f"{model_name}_subsample", 0.1, 1),
             }
             model = XGBRFRegressor(**params)
         elif model_name == 'gb':
@@ -180,28 +178,28 @@ def model_selection(X_train, y_train):
             model = GradientBoostingRegressor(**params)
         elif model_name == 'xggb':
             params = {
-                'n_estimators': trial.suggest_int('n_estimators', 100, 1000),
-                'learning_rate': trial.suggest_float('learning_rate', 1e-6, 0.1, log=True), 
-                'max_depth': trial.suggest_int('max_depth', 2, 10),
-                'reg_alpha': trial.suggest_float('reg_alpha', 1e-4, 10, log=True), 
-                'reg_lambda': trial.suggest_float('reg_lambda', 1e-4, 10, log=True), 
+                'n_estimators': trial.suggest_int(f"{model_name}_n_estimators", 100, 1000),
+                'learning_rate': trial.suggest_float(f"{model_name}_learning_rate", 1e-6, 0.1, log=True), 
+                'max_depth': trial.suggest_int(f"{model_name}_max_depth", 2, 10),
+                'reg_alpha': trial.suggest_float(f"{model_name}_reg_alpha", 1e-4, 10, log=True), 
+                'reg_lambda': trial.suggest_float(f"{model_name}_reg_lambda", 1e-4, 10, log=True), 
 
             }
             model = XGBRegressor(**params)
         elif model_name == 'lgb':
             params = {
-                'num_leaves': trial.suggest_int('num_leaves', 10, 40),
-                'max_depth': trial.suggest_categorical('max_depth', [-1, 3, 6, 12]),
-                'learning_rate': trial.suggest_float('learning_rate', 1e-6, 0.1, log=True),
-                'n_estimators': trial.suggest_int('n_estimators', 50, 120),
-                'subsample': trial.suggest_float('subsample', 0.9, 1)
+                'num_leaves': trial.suggest_int(f"{model_name}_num_leaves", 10, 40),
+                'max_depth': trial.suggest_categorical(f"{model_name}_max_depth", [-1, 3, 6, 12]),
+                'learning_rate': trial.suggest_float(f"{model_name}_learning_rate", 1e-6, 0.1, log=True),
+                'n_estimators': trial.suggest_int(f"{model_name}_n_estimators", 50, 120),
+                'subsample': trial.suggest_float(f"{model_name}_subsample", 0.9, 1)
             }
             model = LGBMRegressor(**params)
 
         return eval_sklearn_model(model, X_train, y_train)
     
     study = optuna.create_study(direction='minimize')
-    study.optimize(objective, n_trials=30)
+    study.optimize(objective, n_trials=30, show_progress_bar=True)
     
     return study.best_params
 ####################################################################################################

@@ -4,10 +4,10 @@ from app.ml.training.model_selection import model_selection
 
 # mock model
 class DummyModel:
-    def fit(self, X, y, *args, **kwargs):
+    def fit(self, X, y, **kwargs):
         return self
 
-    def predict(self, X, *args, **kwargs):
+    def predict(self, X, **kwargs):
         # always predict zero
         return np.zeros(len(X))
 
@@ -36,7 +36,7 @@ def test_model_selection_basic(monkeypatch):
     # mock build_nn_model
     monkeypatch.setattr(
         "app.ml.training.model_selection.build_nn_model",
-        lambda trial, n_features: DummyModel(),
+        lambda trial, *args: DummyModel(),
     )
 
     # fake dataset
@@ -46,6 +46,5 @@ def test_model_selection_basic(monkeypatch):
     # runs model_selection (without actually run it)
     best_params = model_selection(X, y)
 
-    # --- Assertions ---
     assert isinstance(best_params, dict)
-    assert "model" in best_params  # Optuna 回傳中一定包含 model choice
+    assert "model" in best_params  
