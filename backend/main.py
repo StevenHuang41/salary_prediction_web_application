@@ -2,6 +2,7 @@ from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import os
+from pathlib import Path
 
 from app.schemas.salary import RowData, FullData, SalaryInput
 from app.api.router import router as api_router
@@ -57,8 +58,7 @@ print("  http://localhost:3000")
 print(f"  {LOCAL_FRONTEND}")
 
 # Database Initialization
-DB_DIR = os.path.join(os.getcwd(), 'database')
-DB_FILE = os.path.join(DB_DIR, 'salary_prediction.db')
+DB_FILE = str(Path.cwd() / "database" / "salary_prediction.db")
 
 init_database(DB_FILE)
 create_index('job_title', 'idx_job_title', db=DB_FILE)

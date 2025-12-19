@@ -1,9 +1,20 @@
-import os
+from pathlib import Path
 import sqlite3
 import pandas as pd
 
-def init_database(db: str='salary_prediction.db'):
-    # db_path = os.path.join(os.path.dirname(__file__), db)
+def init_database(
+    db: str,
+    *,
+    seed_if_empty: bool = True,
+    csv_name: str = "salary_data.csv",
+    chunksize: int = 200_000,
+) -> None:
+    print(">>> init_database CALED FROM:", __file__)
+    print(">>> cwd:", Path.cwd())
+
+    db_path = Path(db)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
     schema = """
         age INTEGER,
         gender TEXT,
@@ -12,40 +23,47 @@ def init_database(db: str='salary_prediction.db'):
         years_of_experience REAL,
         salary REAL
     """
+
+    """
+    4 age INTEGER,
+    6 gender TEXT,
+    12 education_level TEXT,
+    25 job_title TEXT,
+    8 years_of_experience REAL,
+    8 salary REAL
+    64B * 200_000 = 12.8MB
+    """
+
     with sqlite3.connect(db) as conn:
         c = conn.cursor()
 
-        ## create tables in db
-        c.execute(f"""
-            DROP TABLE IF EXISTS salary;
-        """)
 
         c.execute(f"""
-            CREATE TABLE salary ({schema});
+            CREATE TABLE IF NOT EXISTS salary ({schema});
         """)
+        conn.commit()
 
-        ## import dataset to db
-        """
-        4 age INTEGER, 
-        6 gender TEXT,
-        12 education_level TEXT,
-        25 job_title TEXT,
-        8 years_of_experience REAL,
-        8 salary REAL
-        64B * 1_000_000 = 64MB
-        """
-        # import sys
-        # sys.path.append(os.getcwd().split('/database')[0])
+        if not seed_if_empty:
+            return
+
+        # check if table already has data
+        c.execute("SELECT COUNT(*) FROM salary;")
+        count = c.fetchone()[0]
+        if count > 0:
+            # tabe has data
+            return
+
+
+        # import csv to db
+        csv_path = db_path.parent / csv_name
+        if not csv_path.exists():
+            raise FileNotFoundError(f"Missing csv file {csv_path}")
+
         from my_package.data_cleansing import cleaning_data
 
-        database_dir = db.split('salary_prediction.db')[0]
-        FILE_NAME = os.path.join(database_dir, 'Salary_Data.csv')
-
-        for chunk in pd.read_csv(FILE_NAME, chunksize=1_000_000):
+        for chunk in pd.read_csv(csv_path, chunksize=chunksize):
             chunk = cleaning_data(chunk, has_target_columns=True)
             chunk.to_sql('salary', conn, if_exists='append', index=False)
-
-        # sys.path = sys.path[:-1]
 
         conn.commit()
 
@@ -135,7 +153,7 @@ def insert_record(record: dict, table: str, db: str='salary_prediction.db'):
         record_df.to_sql('salary', conn, if_exists='append', index=False)
 
         conn.commit()
-        
+
 def delete_record(rowid, db: str='salary_prediction.db') -> None:
     # db_path = os.path.join(os.path.dirname(__file__), db)
     with sqlite3.connect(db) as conn:
