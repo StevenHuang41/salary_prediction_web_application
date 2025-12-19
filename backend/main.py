@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import pandas as pd
 import os
+
+from app.schemas.salary import RowData, FullData, SalaryInput
+from app.api.router import router as api_router
 
 from my_package.data_cleansing import cleaning_data
 from my_package.data_extract_func import get_uniq_job_title
@@ -28,14 +30,16 @@ def load_local_ip():
                     return line.strip()
     except FileNotFoundError:
         pass
-    
+
     return "http://127.0.0.1"
 
 LOCAL_IP = load_local_ip()
 LOCAL_FRONTEND = f"{LOCAL_IP}:3000"
 
-# Initialize FastAPI 
+# Initialize FastAPI
 app = FastAPI()
+app.include_router(api_router)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -64,19 +68,6 @@ create_index('salary', 'idx_salary', db=DB_FILE)
 def load_salary_df():
     return query_2_df("select * from salary", DB_FILE)
 
-# Data Models
-class RowData(BaseModel):
-    age: int
-    gender: str
-    education_level: str
-    job_title: str
-    years_of_experience: float
-
-class FullData(RowData):
-    salary: float
-
-class SalaryInput(BaseModel):
-    salary: float
 
 ## dataFrame needs cleansing
 # df = pd.read_csv("database/Salary_Data.csv")
@@ -89,12 +80,12 @@ class SalaryInput(BaseModel):
 CURRENT_FILE = os.getcwd()
 STORE_MODEL_FILE = os.path.join(CURRENT_FILE, "best_performance")
 
-@app.get('/api/get_uniq_job_title')
-async def api_get_uniq_job_title():
-    df = load_salary_df()
-    result = get_uniq_job_title(df)
-
-    return {'value': result}
+# @app.get('/api/get_uniq_job_title')
+# async def api_get_uniq_job_title():
+#     df = load_salary_df()
+#     result = get_uniq_job_title(df)
+#
+#     return {'value': result}
 
 
 @app.post("/api/predict")
@@ -151,7 +142,7 @@ async def api_add_record(data: FullData):
         pd.DataFrame([data.model_dump()]),
         has_target_columns=True,
     )
-    record = input_df.to_dict(orient="records") 
+    record = input_df.to_dict(orient="records")
 
     if record == []:
         return {'status': 'fail',
