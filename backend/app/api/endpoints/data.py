@@ -2,8 +2,7 @@ from fastapi import APIRouter
 import pandas as pd
 
 from app.schemas.salary import FullData
-# from app.db.session import load_salary_df
-from database.database import insert_record, init_database, create_index
+from app.db.database import insert_record, init_database, create_index
 from my_package.data_cleansing import cleaning_data
 from app.core.config import settings
 

@@ -1,4 +1,4 @@
-from database.database import init_database, create_index
+from app.db.database import init_database, create_index
 from app.core.config import settings
 
 

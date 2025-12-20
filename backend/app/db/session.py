@@ -1,7 +1,7 @@
-import app.db.state as state
+from app.db.repositories.salary_repository import SalaryRepository
 
-def load_salary_df():
-    if state.salary_df is None:
-        raise RuntimeError("Database not initialized")
-    return state.salary_df
+_repo = SalaryRepository()
+
+def get_salary_df():
+    return _repo.fetch_all()
 

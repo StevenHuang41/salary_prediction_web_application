@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 from math import floor
 from typing import Literal
-# from .data_cleansing import cleaning_data
 
 def show_plot(
     df: pd.DataFrame,
@@ -14,7 +13,7 @@ def show_plot(
     *,
     group_method: Literal['mean', 'median', 'mode'] = 'mean'
 ):
-    ## create images directory 
+    ## create images directory
     images_dir = os.path.join(os.getcwd(), 'images')
     os.makedirs(images_dir, exist_ok=True)
 
@@ -146,7 +145,7 @@ def show_plot(
 def show_heatmap(X_train: pd.DataFrame,
                  y_train: pd.DataFrame,
                  use_poly: bool = False) -> None:
-    ## create images directory 
+    ## create images directory
     images_dir = os.path.join(os.getcwd(), 'images')
     os.makedirs(images_dir, exist_ok=True)
 
@@ -163,7 +162,7 @@ def show_heatmap(X_train: pd.DataFrame,
                 annot_kws={'size': annot_size})
 
     plt.tight_layout()
-    
+
 
     ## save fig
     fig_name = 'features_heatmap_poly.png' \
@@ -254,7 +253,7 @@ def salary_box_image(salary: float, df: pd.DataFrame):
 if __name__ == "__main__":
     import shutil
 
-    ### load csv 
+    ### load csv
     ## dataFrame
     # from data_cleansing import cleaning_data
     # from data_spliting import spliting_data
@@ -265,15 +264,13 @@ if __name__ == "__main__":
     # df = cleaning_data(df, has_target_columns=True)
 
     ## sql
-    import sys
     from data_cleansing import cleaning_data
-    p_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    sys.path.append(p_dir)
-    from database.database import query_2_df
+    from app.db.database import query_2_df
+    from app.core.config import settings
 
-    df = query_2_df("select * from salary;")
+    df = query_2_df("select * from salary;", str(settings.DB_FILE))
     df = cleaning_data(df)
-    
+
     images_dir = os.path.join(os.getcwd(), 'images')
     os.makedirs(images_dir, exist_ok=True)
 
