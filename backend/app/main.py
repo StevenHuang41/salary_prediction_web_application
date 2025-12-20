@@ -4,10 +4,14 @@ from contextlib import asynccontextmanager
 
 from app.api.router import router as api_router
 from app.db.init import init_db
+from app.core.config import DB_FILE
+from database.database import query_2_df
+import app.db.state as state
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    state.salary_df = query_2_df("SELECT * FROM salary", str(DB_FILE))
     yield
 
 def create_app() -> FastAPI:

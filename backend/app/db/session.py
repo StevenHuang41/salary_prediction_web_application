@@ -1,6 +1,7 @@
-from app.core.config import DB_FILE
-from database.database import query_2_df
+import app.db.state as state
 
 def load_salary_df():
-    return query_2_df("select * from salary", str(DB_FILE))
+    if state.salary_df is None:
+        raise RuntimeError("Database not initialized")
+    return state.salary_df
 
