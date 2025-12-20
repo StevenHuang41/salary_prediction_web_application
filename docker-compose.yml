@@ -16,7 +16,13 @@ services:
     image: backend
     ports:
       - "8001:8001"
-    command: ["uv", "run", "main.py", "8001"]
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8001"
 
   frontend_test:
     build: ./frontend

@@ -1,13 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from app.api.router import router as api_router
+from app.db.init import init_db
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Salary Prediction API")
+    app = FastAPI(
+        title="Salary Prediction API",
+        lifespan=lifespan,
+    )
 
-    # CORS (still here for now)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[

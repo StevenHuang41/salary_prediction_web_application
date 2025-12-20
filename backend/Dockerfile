@@ -12,14 +12,11 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --locked
 
-# ENV PATH="/backend/.venv/bin:$PATH"
+ENV PATH="/backend/.venv/bin:$PATH"
 
 COPY . .
 
 EXPOSE 8000
 
-CMD ["uv", "run", "main.py", "8000"]
-# CMD ["uvicorn", "main:app", "--host", \
-#     "0.0.0.0", "--port", "8000"]
-# CMD ["uv", "run", "main.py"]
-# CMD ["python", "-u", "main.py"]
+CMD ["uvicorn", "app.main:app", "--host", \
+     "0.0.0.0", "--port", "8000"]
