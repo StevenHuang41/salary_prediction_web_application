@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import pandas as pd
 
-from app.core.config import MODEL_DIR
+from app.core.config import settings
 from app.schemas.salary import RowData
 from app.db.session import load_salary_df
 from my_package.data_cleansing import cleaning_data
@@ -19,7 +19,7 @@ def retrain_model_api(data: RowData):
         "result": predict_salary(
             input_df,
             df,
-            str(MODEL_DIR),
+            str(settings.MODEL_DIR),
             restart=True,
         ),
     }

@@ -1,12 +1,21 @@
 from pathlib import Path
+from pydantic_settings import BaseSettings
 
-BASE_DIR = Path(__file__).resolve().parents[2]  # backend/
+class Settings(BaseSettings):
 
-DATABASE_DIR = BASE_DIR / "database"
+    BASE_DIR: Path = Path("/backend")
 
-DB_FILE = DATABASE_DIR / "salary_prediction.db"
+    DATABASE_DIR: Path = BASE_DIR / "database"
 
-MODEL_DIR = BASE_DIR / "best_performance"
+    MODEL_DIR: Path = BASE_DIR / "best_performance"
 
-CSV_FILE = DATABASE_DIR / "salary_data.csv"
+    DB_FILE: Path = DATABASE_DIR / "salary_prediction.db"
 
+    CSV_FILE: Path = DATABASE_DIR / "salary_data.csv"
+
+    FRONTEND_ORIGIN: str = "http://localhost:3000"
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()

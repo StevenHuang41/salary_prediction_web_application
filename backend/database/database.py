@@ -2,7 +2,8 @@ from pathlib import Path
 import sqlite3
 import pandas as pd
 
-from app.core.config import CSV_FILE
+from app.core.config import settings
+
 
 def init_database(
     db: str,
@@ -53,12 +54,12 @@ def init_database(
 
 
         # import csv to db
-        if not CSV_FILE.exists():
-            raise FileNotFoundError(f"Missing csv file {CSV_FILE}")
+        if not settings.CSV_FILE.exists():
+            raise FileNotFoundError(f"Missing csv file {settings.CSV_FILE}")
 
         from my_package.data_cleansing import cleaning_data
 
-        for chunk in pd.read_csv(CSV_FILE, chunksize=chunksize):
+        for chunk in pd.read_csv(settings.CSV_FILE, chunksize=chunksize):
             chunk = cleaning_data(chunk, has_target_columns=True)
             chunk.to_sql('salary', conn, if_exists='append', index=False)
 
@@ -139,7 +140,6 @@ def insert_record(record: dict, table: str, db: str):
         if record_keys_set != set(table_column):
             raise AssertionError("Record keys do not match table columns.")
 
-        import sys
         from my_package.data_cleansing import cleaning_data
 
         record_df = pd.DataFrame([record])

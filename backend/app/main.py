@@ -4,14 +4,15 @@ from contextlib import asynccontextmanager
 
 from app.api.router import router as api_router
 from app.db.init import init_db
-from app.core.config import DB_FILE
+from app.core.config import settings
 from database.database import query_2_df
 import app.db.state as state
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    state.salary_df = query_2_df("SELECT * FROM salary", str(DB_FILE))
+    state.salary_df = query_2_df("SELECT * FROM salary",
+                                 str(settings.DB_FILE))
     yield
 
 def create_app() -> FastAPI:
@@ -23,7 +24,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
-            "http://localhost:3000",
+            settings.FRONTEND_ORIGIN,
         ],
         allow_credentials=True,
         allow_methods=["*"],
