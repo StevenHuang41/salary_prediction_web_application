@@ -9,8 +9,9 @@ from my_package.data_predict import predict_salary
 
 router = APIRouter()
 
+
 @router.post("/retrain_model")
-def retrain_model_api(data: RowData):
+async def retrain_model_api(data: RowData):
     df = load_salary_df()
     input_df = cleaning_data(pd.DataFrame([data.model_dump()]))
 

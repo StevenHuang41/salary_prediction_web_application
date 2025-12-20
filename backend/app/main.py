@@ -21,11 +21,10 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    print("Frontend Origins:", settings.frontend_origins_list)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            settings.FRONTEND_ORIGIN,
-        ],
+        allow_origins=settings.frontend_origins_list,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    BASE_DIR: Path = Path("/backend")
+    BASE_DIR: Path = Path(__file__).resolve().parents[2]
 
     DATABASE_DIR: Path = BASE_DIR / "database"
 
@@ -13,9 +13,14 @@ class Settings(BaseSettings):
 
     CSV_FILE: Path = DATABASE_DIR / "salary_data.csv"
 
-    FRONTEND_ORIGIN: str = "http://localhost:3000"
+    FRONTEND_ORIGINS: str = "http://localhost:3000"
 
     class Config:
-        env_file = ".env"
+        env_file = (".env", ".env.local")
+        extra = "ignore"
+
+    @property
+    def frontend_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.FRONTEND_ORIGINS.split(",")]
 
 settings = Settings()

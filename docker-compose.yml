@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/best_performance:/backend/best_performance
+    env_file:
+      - ./backend/.env.local
     tty: true
     stdin_open: true
 
@@ -14,6 +16,8 @@ services:
     build:
       context: ./backend
     image: backend
+    env_file:
+      - ./backend/.env.local
     ports:
       - "8001:8001"
     command:
