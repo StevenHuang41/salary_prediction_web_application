@@ -71,29 +71,3 @@ def predict_salary(
         "params": model_params,
     }
 
-if __name__ == "__main__":
-
-    from data_cleansing import cleaning_data
-
-    p_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
-    FILE_PATH = os.path.join(p_dir, 'database/Salary_Data.csv')
-    df = pd.read_csv(FILE_PATH)
-    df = cleaning_data(df)
-
-    store_file = 'best'
-    sample_df = pd.DataFrame([{
-        "age": 20,
-        "gender": "female",
-        "education_level": "Bachelor",
-        "job_title": "Data Engineer",
-        "years_of_experience": 1,
-    }])
-
-    # test 1
-    # print(predict_salary(sample_df, df, store_file))
-
-    # test 2
-    # print(predict_salary(sample_df, df, store_file, restart=True))
-
-
-    shutil.rmtree(store_file)

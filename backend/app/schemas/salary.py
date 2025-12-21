@@ -11,5 +11,14 @@ class FullData(RowData):
     salary: float
 
 class SalaryPrediction(BaseModel):
+    model_name: str
+    use_polynomial: bool 
+    value: float
+    num_train_dataset: int
+    num_test_dataset: int
+    params: dict
+
+
+class SalaryValue(BaseModel):
     salary: float
 
