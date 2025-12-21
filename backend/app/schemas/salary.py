@@ -10,6 +10,6 @@ class RowData(BaseModel):
 class FullData(RowData):
     salary: float
 
-class SalaryInput(BaseModel):
+class SalaryPrediction(BaseModel):
     salary: float
 
