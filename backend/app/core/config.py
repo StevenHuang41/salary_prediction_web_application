@@ -5,9 +5,9 @@ class Settings(BaseSettings):
 
     BASE_DIR: Path = Path(__file__).resolve().parents[2]
 
-    DATABASE_DIR: Path = BASE_DIR / "database"
+    DATABASE_DIR: Path = BASE_DIR / "app" / "db"
 
-    MODEL_DIR: Path = BASE_DIR / "best_performance"
+    MODEL_DIR: Path = BASE_DIR / "ml" / "best_performance"
 
     DB_FILE: Path = DATABASE_DIR / "salary_prediction.db"
 
