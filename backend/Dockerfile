@@ -4,7 +4,7 @@ WORKDIR /backend
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y libgomp1 libsqlite3-dev && \
+    apt-get install -y libgomp1 libsqlite3-dev curl&& \
     rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir uv
 

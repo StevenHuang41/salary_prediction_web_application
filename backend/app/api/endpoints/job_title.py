@@ -5,7 +5,7 @@ from my_package.data_extract_func import get_uniq_job_title
 
 router = APIRouter()
 
-@router.get("/get_uniq_job_title")
+@router.get("/uniq_job_title")
 def get_uniq_job_title_api(
     repo: SalaryRepository = Depends(get_salary_repository)
 ):

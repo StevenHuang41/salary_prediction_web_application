@@ -3,7 +3,7 @@ import { api0, api1 } from "./axiosInstance";
 
 const getUniqJobTitle = async () => {
   try {
-    const res = await api1.get('/get_uniq_job_title');
+    const res = await api1.get('/uniq_job_title');
     return res.data;
   } catch (err) {
     console.error("Error fetching data:", err.message);

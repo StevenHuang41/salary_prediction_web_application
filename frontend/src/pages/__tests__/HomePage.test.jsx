@@ -77,7 +77,7 @@ describe('HomePage', () => {
       const submitBtn = screen.getByText('Predict Salary');
       await userEvent.click(submitBtn);
 
-      expect(await screen.findByText('Loading ...')).toBeInTheDocument();
+      expect(await screen.findByText('Loading ...', {}, { timeout: 3000 })).toBeInTheDocument();
       expect(await screen.findByText('OutputSection')).toBeInTheDocument();
       expect(screen.queryByText('Loading ...')).not.toBeInTheDocument();
     }

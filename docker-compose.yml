@@ -9,8 +9,8 @@ services:
       - ./backend/best_performance:/backend/best_performance
     env_file:
       - ./backend/.env.local
-    tty: true
     stdin_open: true
+    tty: true
 
   backend:
     build:
@@ -27,10 +27,19 @@ services:
       - 0.0.0.0
       - --port
       - "8001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 25s
 
   frontend_test:
     build: ./frontend
     image: frontend_test
+    depends_on:
+      backend:
+        condition: service_healthy
     command: ["npm", "run", "test"]
 
   frontend:

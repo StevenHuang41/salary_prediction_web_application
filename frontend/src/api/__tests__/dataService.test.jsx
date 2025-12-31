@@ -38,7 +38,7 @@ describe('getUniqJobTitle', () => {
   it('return data when success', async () => {
     api1.get.mockResolvedValue({ data: { value: ['Data Scientist'] } });
     const data = await getUniqJobTitle();
-    expect(api1.get).toHaveBeenCalledWith('/get_uniq_job_title');
+    expect(api1.get).toHaveBeenCalledWith('/uniq_job_title');
     expect(data).toStrictEqual({ value: ['Data Scientist'] });
   });
 
@@ -75,7 +75,7 @@ describe('predictSalary', () => {
     .toHaveBeenCalledWith("Error predicting salary:", err.message);
   });
 });
-  
+
 describe('fetchSalaryHistPlot', () => {
   const salary = 1234;
   const wrongSalary = '';
