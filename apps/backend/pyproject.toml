@@ -1,0 +1,21 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.129.0",
+    "jupyter>=1.1.1",
+    "jupytext>=1.19.1",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.2",
+    "pandas>=3.0.1",
+    "pydantic-settings>=2.13.0",
+    "pytest>=9.0.2",
+    "seaborn>=0.13.2",
+    "uvicorn>=0.41.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
