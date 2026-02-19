@@ -89,6 +89,6 @@ def clean_data(
     df = df.loc[(df['age'] - df['years_of_experience']) >= 18]
 
     # drop duplicated
-    df = df.drop_duplicates()
+    df = df.drop_duplicates(ignore_index=True)
 
     return df

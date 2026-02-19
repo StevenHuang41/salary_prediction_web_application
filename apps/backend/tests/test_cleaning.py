@@ -34,11 +34,11 @@ def test_clean_salary():
 
 def test_clean_data():
     df = pd.DataFrame({
-        'Age': [20, 19, 28, 27],
-        'gender': ['Female', 'male', 'other', 'male'],
-        'education Level': ["master's degree", 'Bachelor', 'PhD', 'high school'],
-        'Job   title': ['Data Scientist', 'Data Engineer', 'Data Analyst', 'driver'],
-        ' years  Of experience': [2, 1, 3, 5],
+        'Age': [20, 19, 28, 27, 27],
+        'gender': ['Female', 'male', 'other', 'male', 'male'],
+        'education Level': ["master's degree", 'Bachelor', 'PhD', 'high school', 'high school'],
+        'Job   title': ['Data Scientist', 'Data Engineer', 'Data Analyst', 'driver', 'driver'],
+        ' years  Of experience': [2, 1, 3, 5, 5],
     })
 
     cleaned = clean_data(df)
