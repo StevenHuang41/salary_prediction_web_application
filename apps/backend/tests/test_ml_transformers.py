@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from app.ml.utils.ml_transformers import (
+from app.ml.features.ml_transformers import (
     JobSeniorityTransformer,
     JobGroupTransformer,
     TextExistTransformer,
@@ -79,8 +79,8 @@ def test_TextExist(sample_df):
 
 def test_MathTransformer_wrong_method(sample_df):
     with pytest.raises(ValueError, match="Unknown method: s"):
-        jobT = MathTransformer(method="s")
-        result = jobT.fit_transform(sample_df.age)
+        jobT = MathTransformer(method="s")          # type: ignore
+        result = jobT.fit_transform(sample_df.age)  # type: ignore
 
 def test_MathTransformer(sample_df):
     jobT = MathTransformer(method="square", suffix='test_suffix')

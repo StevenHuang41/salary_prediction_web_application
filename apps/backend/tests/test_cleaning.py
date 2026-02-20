@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from app.ml.preprocess.cleaning import rename_cols, clean_salary, clean_data
+from app.ml.data.cleaning import rename_cols, clean_salary, clean_data
 
 def test_rename_cols():
     df = pd.DataFrame({
