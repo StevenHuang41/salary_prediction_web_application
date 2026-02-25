@@ -2,16 +2,17 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from app.ml.features.ml_transformers import (
+from app.ml.features.transformers import (
     JobSeniorityTransformer,
     JobGroupTransformer,
+    JobRoleTransformer,
     TextExistTransformer,
     MathTransformer,
     MultiLabelWrapper,
 )
 
 @pytest.fixture
-def sample_df():
+def sample_df() -> pd.DataFrame:
     df = pd.DataFrame({
         "age": [25, 30],
         "gender": ["female", "male"],
@@ -23,7 +24,7 @@ def sample_df():
     return df
 
 
-def test_JobSeniority(sample_df):
+def test_JobSeniority(sample_df: pd.DataFrame):
     jobT = JobSeniorityTransformer()
 
     result = jobT.fit_transform(sample_df.job_title)
@@ -35,13 +36,14 @@ def test_JobSeniority(sample_df):
     assert result[1, 0] == "senior"
 
     col_name = jobT.get_feature_names_out()[0]
-    assert col_name == 'seniority'
+    assert col_name == 'job_seniority'
 
     assert isinstance(jobT.fit_transform(sample_df[["job_title"]]), np.ndarray)
     assert isinstance(jobT.fit_transform(sample_df.job_title.to_numpy()), np.ndarray)
+    assert isinstance(jobT.fit_transform(sample_df.job_title.tolist()), np.ndarray)
 
 
-def test_JobGroup(sample_df):
+def test_JobGroup(sample_df: pd.DataFrame):
     jobT = JobGroupTransformer()
 
     result = jobT.fit_transform(sample_df.job_title)
@@ -50,16 +52,36 @@ def test_JobGroup(sample_df):
     assert result.shape[1] == 1
 
     assert result[0, 0] == "data"
-    assert result[1, 0] == "software_engineer_developer"
+    assert result[1, 0] == "software"
 
     col_name = jobT.get_feature_names_out()[0]
-    assert col_name == "group"
+    assert col_name == "job_group"
 
     assert isinstance(jobT.fit_transform(sample_df[["job_title"]]), np.ndarray)
     assert isinstance(jobT.fit_transform(sample_df.job_title.to_numpy()), np.ndarray)
+    assert isinstance(jobT.fit_transform(sample_df.job_title.tolist()), np.ndarray)
 
 
-def test_TextExist(sample_df):
+def test_JobRole(sample_df: pd.DataFrame):
+    jobT = JobRoleTransformer()
+
+    result = jobT.fit_transform(sample_df.job_title)
+    assert isinstance(result, np.ndarray)
+    assert result.ndim == 2
+    assert result.shape[1] == 1
+
+    assert result[0, 0] == "scientist"
+    assert result[1, 0] == "engineer"
+
+    col_name = jobT.get_feature_names_out()[0]
+    assert col_name == "job_role"
+
+    assert isinstance(jobT.fit_transform(sample_df[["job_title"]]), np.ndarray)
+    assert isinstance(jobT.fit_transform(sample_df.job_title.to_numpy()), np.ndarray)
+    assert isinstance(jobT.fit_transform(sample_df.job_title.tolist()), np.ndarray)
+
+
+def test_TextExist(sample_df: pd.DataFrame):
     jobT = TextExistTransformer(text="senior")
 
     result = jobT.fit_transform(sample_df.job_title)
@@ -75,14 +97,15 @@ def test_TextExist(sample_df):
 
     assert isinstance(jobT.fit_transform(sample_df[["job_title"]]), np.ndarray)
     assert isinstance(jobT.fit_transform(sample_df.job_title.to_numpy()), np.ndarray)
+    assert isinstance(jobT.fit_transform(sample_df.job_title.tolist()), np.ndarray)
 
 
-def test_MathTransformer_wrong_method(sample_df):
+def test_MathTransformer_wrong_method(sample_df: pd.DataFrame):
     with pytest.raises(ValueError, match="Unknown method: s"):
         jobT = MathTransformer(method="s")          # type: ignore
         result = jobT.fit_transform(sample_df.age)  # type: ignore
 
-def test_MathTransformer(sample_df):
+def test_MathTransformer(sample_df: pd.DataFrame):
     jobT = MathTransformer(method="square", suffix='test_suffix')
 
     result = jobT.fit_transform(sample_df.age)
@@ -100,7 +123,7 @@ def test_MathTransformer(sample_df):
     assert isinstance(jobT.fit_transform(sample_df.age.to_numpy()), np.ndarray)
 
 
-def test_MultiLabelWrapper(sample_df):
+def test_MultiLabelWrapper(sample_df: pd.DataFrame):
     jobT = MultiLabelWrapper()
     result = jobT.fit_transform(sample_df.job_title)
 

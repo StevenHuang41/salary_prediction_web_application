@@ -24,28 +24,34 @@ def sample_df():
 
 # type
 def test_split_data_return_type(sample_df):
-    X_train, X_test, y_train, y_test = split_data(sample_df)
+    train_df, test_df = split_data(sample_df)
 
-    assert isinstance(X_train, pd.DataFrame)
-    assert isinstance(X_test, pd.DataFrame)
-    assert isinstance(y_train, pd.Series)
-    assert isinstance(y_test, pd.Series)
+    assert isinstance(train_df, pd.DataFrame)
+    assert isinstance(test_df, pd.DataFrame)
+
+# cols
+def test_split_data_return_cols(sample_df):
+    train_df, test_df = split_data(sample_df)
+
+    assert "job_seniority" in train_df.columns
+    assert "job_group" in train_df.columns
+    assert "job_role" in train_df.columns
+
+    assert "job_seniority" in test_df.columns
+    assert "job_group" in test_df.columns
+    assert "job_role" in test_df.columns
 
 # ratio
 def test_split_data_ratio(sample_df):
-    X_train, X_test, y_train, y_test = split_data(sample_df, test_size=0.3)
+    train_df, test_df = split_data(sample_df, test_size=0.3)
 
-    assert X_train.shape[0] == 4
-    assert y_train.shape[0] == 4
-    assert X_test.shape[0] == 2
-    assert y_test.shape[0] == 2
+    assert train_df.shape[0] == 4
+    assert test_df.shape[0] == 2
 
-    X_train, X_test, y_train, y_test = split_data(sample_df, test_size=0.5)
+    train_df, test_df = split_data(sample_df, test_size=0.5)
 
-    assert X_train.shape[0] == 3
-    assert y_train.shape[0] == 3
-    assert X_test.shape[0] == 3
-    assert y_test.shape[0] == 3
+    assert train_df.shape[0] == 3
+    assert test_df.shape[0] == 3
 
 # reproducible
 def test_split_data_random(sample_df):
@@ -53,4 +59,4 @@ def test_split_data_random(sample_df):
     s2 = split_data(sample_df, random_state=42)
 
     assert (s1[0].index == s2[0].index).all()
-    assert (s1[2].index == s2[2].index).all()
+    assert (s1[1].index == s2[1].index).all()
