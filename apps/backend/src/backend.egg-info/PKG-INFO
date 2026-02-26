@@ -9,6 +9,7 @@ Requires-Dist: jupyter>=1.1.1
 Requires-Dist: jupytext>=1.19.1
 Requires-Dist: matplotlib>=3.10.8
 Requires-Dist: numpy>=2.4.2
+Requires-Dist: optuna>=4.7.0
 Requires-Dist: pandas>=3.0.1
 Requires-Dist: pydantic-settings>=2.13.0
 Requires-Dist: pytest>=9.0.2

@@ -8,27 +8,28 @@ from sklearn.pipeline import Pipeline
 
 from app.ml.preprocess.linear import build as build_linear_pre
 
-def build_linear():
+
+def build_linear(**kws):
     return Pipeline([
         ('preprocess', build_linear_pre()),
-        ('model', LinearRegression()),
+        ('model', LinearRegression(**kws)),
     ])
 
-def build_ridge():
+def build_ridge(**kws):
     return Pipeline([
         ('preprocess', build_linear_pre()),
-        ('model', Ridge()),
+        ('model', Ridge(**kws)),
     ])
 
-def build_lasso():
+def build_lasso(**kws):
     return Pipeline([
         ('preprocess', build_linear_pre()),
-        ('model', Lasso()),
+        ('model', Lasso(**kws)),
     ])
 
-def build_elasticNet():
+def build_elasticNet(**kws):
     return Pipeline([
         ('preprocess', build_linear_pre()),
-        ('model', ElasticNet()),
+        ('model', ElasticNet(**kws)),
     ])
 

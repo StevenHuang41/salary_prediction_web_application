@@ -4,21 +4,21 @@ from sklearn.pipeline import Pipeline
 
 from app.ml.preprocess.tree import build as build_tree_pre
 
-def build_HGBR():
+def build_HGBR(**kws):
     return Pipeline([
         ('preprocess', build_tree_pre()),
-        ('model', HistGradientBoostingRegressor()),
+        ('model', HistGradientBoostingRegressor(**kws)),
     ])
 
-def build_xgb():
+def build_xgb(**kws):
     return Pipeline([
         ('preprocess', build_tree_pre()),
-        ('model', XGBRegressor()),
+        ('model', XGBRegressor(**kws)),
     ])
 
-def build_xgbrf():
+def build_xgbrf(**kws):
     return Pipeline([
         ('preprocess', build_tree_pre()),
-        ('model', XGBRFRegressor()),
+        ('model', XGBRFRegressor(**kws)),
     ])
 

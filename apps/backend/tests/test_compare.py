@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from app.ml.train.compare import compare_models
+from app.ml.train.compare import compare_model_family
 
 
 def test_compare_return(monkeypatch):
@@ -29,7 +29,7 @@ def test_compare_return(monkeypatch):
         "modelc": lambda: MockModel("C"),
     }
 
-    best_model_name = compare_models(models, X=None, y=None)
+    best_model_name = compare_model_family(models, X=None, y=None)
 
     assert best_model_name == "modelb"
 

@@ -37,7 +37,8 @@ src/app/ml/preprocess/nn.py
 src/app/ml/preprocess/tree.py
 src/app/ml/train/compare.py
 src/app/ml/train/trainer.py
-src/app/ml/train/tune.py
+src/app/ml/tune/old_tune.py
+src/app/ml/tune/tree.py
 src/app/schemas/__init__.py
 src/app/schemas/salary.py
 src/app/services/__init__.py
@@ -48,6 +49,7 @@ src/backend.egg-info/dependency_links.txt
 src/backend.egg-info/requires.txt
 src/backend.egg-info/top_level.txt
 tests/test_cleaning.py
+tests/test_compare.py
 tests/test_ml_transformers.py
 tests/test_models.py
 tests/test_preprocess_pipeline.py

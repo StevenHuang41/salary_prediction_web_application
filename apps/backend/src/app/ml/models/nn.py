@@ -3,15 +3,15 @@ from sklearn.neural_network import MLPRegressor
 
 from app.ml.preprocess.nn import build as build_nn_pre
 
-def build_MLP(
-    hidden_layer_sizes: tuple[int, ...] = (100,),
-    max_iter: int = 1000,
-):
+def build_MLP(**kws):
+    default_params = {
+        "hidden_layer_sizes": (100,),
+        "learning_rate": "adaptive",
+        "max_iter": 1000,
+    }
+    default_params.update(kws)
+
     return Pipeline([
         ('preprocess', build_nn_pre()),
-        ('model', MLPRegressor(
-            hidden_layer_sizes=hidden_layer_sizes,
-            learning_rate="adaptive",
-            max_iter=max_iter,
-        )),
+        ('model', MLPRegressor(**default_params)),
     ])

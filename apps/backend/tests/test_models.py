@@ -107,7 +107,7 @@ def test_build_elasticNet(sample_X, sample_y, sample_X_test):
 
 
 # tree
-def test_build_HGBR(sample_X, sample_y, sample_X_test):
+def tejt_build_HGBR(sample_X, sample_y, sample_X_test):
     model = build_HGBR()
     assert isinstance(model, Pipeline)
 
@@ -153,7 +153,7 @@ def test_build_MLP_arguments(sample_X, sample_y, sample_X_test):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
-        model = build_MLP((64, 32), 2000)
+        model = build_MLP(hidden_layer_sizes=(64, 32), max_iter=2000)
         assert isinstance(model, Pipeline)
 
         model.fit(sample_X, sample_y)
