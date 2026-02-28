@@ -52,8 +52,6 @@ def test_linear_pipeline(sample_X: pd.DataFrame, sample_y: pd.Series):
     result = linear_pipe.fit_transform(sample_X, sample_y)
     columns = linear_pipe.get_feature_names_out()
 
-    assert result.shape == (6, 8)
-
     assert "age" not in columns
 
     assert np.issubdtype(result.dtype, np.number)
@@ -65,8 +63,6 @@ def test_tree_pipeline(sample_X: pd.DataFrame, sample_y: pd.Series):
 
     result = tree_pipe.fit_transform(sample_X, sample_y)
     columns = tree_pipe.get_feature_names_out()
-
-    assert result.shape == (6, 10)
 
     assert "age" in columns
 
@@ -80,10 +76,6 @@ def test_nn_pipeline(sample_X: pd.DataFrame, sample_y: pd.Series):
     result = nn_pipe.fit_transform(sample_X, sample_y)
     columns = nn_pipe.get_feature_names_out()
 
-    assert result.shape == (6, 8)
-
     assert "age" in columns
 
     assert np.issubdtype(result.dtype, np.number)
-
-

@@ -24,7 +24,7 @@ async def retrain_model_api(
         "result": predict_salary(
             input_df,
             df,
-            str(settings.MODEL_DIR),
+            str(settings.ARTIFACTS_DIR),
             restart=True,
         ),
     }

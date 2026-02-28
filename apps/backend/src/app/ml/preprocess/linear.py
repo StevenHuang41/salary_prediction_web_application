@@ -1,5 +1,6 @@
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import (
     StandardScaler,
     OneHotEncoder,
@@ -13,11 +14,13 @@ def build():
 
         # gender
         ('gender', Pipeline([
+            ('impute', SimpleImputer(strategy="constant", fill_value="other")),
             ('ohe', OneHotEncoder(drop='first', sparse_output=False)),
         ]), ['gender']),
 
         # education_level
         ('edu_level', Pipeline([
+            ('impute', SimpleImputer(strategy='constant', fill_value="unknown")),
             ('ordinal', OrdinalEncoder(
                 categories=[[ # type: ignore
                     'unknown',
@@ -38,14 +41,15 @@ def build():
         # ]), ['job_title']),
 
         # job v2
-        ('job_title', Pipeline([
-            ('target', TargetEncoder(target_type='continuous')),
-            ('scaler', StandardScaler()),
-        ]), ['job_title']),
+        # ('job_title', Pipeline([
+        #     ('impute', SimpleImputer(strategy="constant", fill_value="unknown")),
+        #     ('target', TargetEncoder(target_type='continuous')),
+        #     ('scaler', StandardScaler()),
+        # ]), ['job_title']),
 
         # seniority
         ('job_seniority', Pipeline([
-            
+            ('impute', SimpleImputer(strategy="constant", fill_value="unknown")),
             ('ordinal', OrdinalEncoder(
                 categories=[[ # type: ignore
                     'junior',
@@ -74,6 +78,7 @@ def build():
 
         # year
         ('year', Pipeline([
+            ('impute', SimpleImputer()),
             ('scaler', StandardScaler()),
         ]), ['years_of_experience']),
     ], verbose_feature_names_out=False)

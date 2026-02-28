@@ -21,7 +21,7 @@ class SalaryMLService:
         return predict_salary(
             sample_df=sample_df,
             df=df,
-            store_file=str(settings.MODEL_DIR),
+            store_file=str(settings.ARTIFACTS_DIR),
             restart=restart,
         )
 

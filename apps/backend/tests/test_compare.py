@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from app.ml.train.compare import compare_model_family
+from app.ml.train.compare import compare_models
 
 
 def test_compare_return(monkeypatch):
@@ -12,11 +12,11 @@ def test_compare_return(monkeypatch):
 
     def mock_cross_val_score(model, X, y, cv, scoring):
         if model.name == "A":
-            return np.array([-1, -1, -1])
-        elif model.name == "B":
             return np.array([-2, -2, -2])
+        elif model.name == "B":
+            return np.array([-1, -1, -1])
         else :
-            return np.array([0, 0, 0])
+            return np.array([-3, -3, -3])
 
     monkeypatch.setattr(
         "app.ml.train.compare.cross_val_score",
@@ -29,9 +29,10 @@ def test_compare_return(monkeypatch):
         "modelc": lambda: MockModel("C"),
     }
 
-    best_model_name = compare_model_family(models, X=None, y=None)
+    best_model, best_score = compare_models(models, X=None, y=None)
 
-    assert best_model_name == "modelb"
+    assert best_model == "modelb"
+    assert isinstance(best_score, float)
 
 
 

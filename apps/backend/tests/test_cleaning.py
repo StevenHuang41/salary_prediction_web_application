@@ -21,7 +21,7 @@ def test_rename_cols():
 def test_clean_salary():
     df = pd.DataFrame({
         'age': [20, 19, 28, 27],
-        'gender': ['Female', 'male', 'other', 'male'],
+        'gender': [np.nan, 'male', 'other', 'male'],
         'education_level': ["master's degree", 'Bachelor', 'PhD', 'high school'],
         'job_title': ['Data Scientist', 'Data Engineer', 'Data Analyst', 'driver'],
         'years_of_experience': [2, 1, 3, 5],
@@ -47,7 +47,7 @@ def test_clean_data():
     assert not cleaned.isna().any().any()
 
     # col: age
-    assert cleaned.age.dtype.name == 'int32'
+    assert cleaned.age.dtype.name == 'float32'
 
     # col: gender
     assert list(cleaned.gender.unique().sort_values()) == ['female', 'male', 'other']

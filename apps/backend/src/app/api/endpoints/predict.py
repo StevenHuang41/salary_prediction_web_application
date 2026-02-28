@@ -19,7 +19,7 @@ async def predict_salary_api(
     df = repo.fetch_all()
     input_df = cleaning_data(pd.DataFrame([data.model_dump()]))
 
-    result = predict_salary(input_df, df, str(settings.MODEL_DIR))
+    result = predict_salary(input_df, df, str(settings.ARTIFACTS_DIR))
     return {
         "model_name": result['model_name'],
         "use_polynomial": result['use_polynomial'],

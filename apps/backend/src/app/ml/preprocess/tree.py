@@ -38,11 +38,11 @@ def build():
         # ]), ['job_title']),
 
         # job v2
-        ('job_title', Pipeline([
-            ('target', TargetEncoder(
-                target_type='continuous',
-            )),
-        ]), ['job_title']),
+        # ('job_title', Pipeline([
+        #     ('target', TargetEncoder(
+        #         target_type='continuous',
+        #     )),
+        # ]), ['job_title']),
 
         # seniority
         ('job_seniority', Pipeline([

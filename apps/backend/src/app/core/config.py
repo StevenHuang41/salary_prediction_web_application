@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     # Project Root
     # -------------------------
     PROJECT_ROOT: Path = Path(__file__).resolve().parents[5]
+    BACKEND_DIR: Path = PROJECT_ROOT / "apps" / "backend"
 
     # -------------------------
     # Data Directories (project-level)
@@ -15,21 +16,20 @@ class Settings(BaseSettings):
     DATA_DIR: Path = PROJECT_ROOT / "data"
     RAW_DATA_DIR: Path = DATA_DIR / "raw"
     PROCESSED_DATA_DIR: Path = DATA_DIR / "processed"
+    RAW_DATA_FILE: Path = RAW_DATA_DIR / "salary_data.csv"
 
     # -------------------------
-    # ML Artifacts (backend-level)
+    # Artifacts (backend-level)
     # -------------------------
-    BACKEND_ROOT: Path = Path(__file__).resolve().parents[3]
-
-    MODEL_DIR: Path = BACKEND_ROOT / "ml" / "artifacts"
-    MODEL_FILE: Path = MODEL_DIR / "model.joblib"
+    ARTIFACTS_DIR: Path = BACKEND_DIR / "artifacts"
+    MODEL_FILE: Path = ARTIFACTS_DIR / "model.joblib"
 
     # -------------------------
     # Database
     # -------------------------
     DATABASE_URL: str | None = None
 
-    SQLITE_FILE: Path = BACKEND_ROOT / "db" / "app.db"
+    SQLITE_FILE: Path = BACKEND_DIR / "app" / "db" / "app.db"
 
     # -------------------------
     # CORS

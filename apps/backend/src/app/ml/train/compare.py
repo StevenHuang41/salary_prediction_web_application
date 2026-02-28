@@ -1,23 +1,21 @@
-from sklearn.model_selection import cross_val_score, cross_validate
+from sklearn.model_selection import cross_val_score
 
 
-def compare_model_family(models: dict, X, y, cv: int = 3):
-    # cleaned, split data (X and y)
+def compare_models(models: dict, X, y, cv: int = 3):
     results: dict[str, float] = {}
 
-    for model_family, build_model in models.items():
+    for model_name, build_model in models.items():
         model = build_model()
 
-        rmse = -cross_val_score(
+        score = -cross_val_score(
             model,
             X, y,
             cv=cv,
-            scoring="neg_root_mean_squared_error",
+            scoring="neg_mean_squared_error",
         ).mean()
 
-        results[model_family] = rmse
+        results[model_name] = score
 
-    return max(results, key=lambda k: results[k])
+        best_model = min(results, key=lambda k: results[k])
 
-
-
+    return best_model, results[best_model]

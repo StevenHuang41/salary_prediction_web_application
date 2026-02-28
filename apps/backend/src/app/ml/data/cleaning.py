@@ -35,12 +35,11 @@ def clean_data(
     # col: salary
     if has_target_col:
         df = clean_salary(df, **kws)
-
-    # remove nan
-    df.dropna(inplace=True)
+    else :
+        df.dropna()
 
     # col: age
-    df.age = df.age.astype('int32')
+    df.age = df.age.astype('float32')
 
     # col: gender
     gender_order = ['female', 'male', 'other']
@@ -87,6 +86,9 @@ def clean_data(
 
     # remove incorrect age-experience rows
     df = df.loc[(df['age'] - df['years_of_experience']) >= 18]
+
+    # remove education NaN
+    df = df.dropna(subset=["education_level"]).reset_index(drop=True).copy()
 
     # drop duplicated
     df = df.drop_duplicates(ignore_index=True)
