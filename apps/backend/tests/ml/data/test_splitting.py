@@ -1,26 +1,8 @@
-import pytest
 import pandas as pd
+import numpy as np
 
 from app.ml.data.spliting import split_data
 
-@pytest.fixture
-def sample_df():
-    df = pd.DataFrame({
-        "age": [25, 32, 24, 31, 29, 33],
-        "gender": ["female", "male", "female", "male", "female", "male"],
-        "education_level": ["high_school", "phd", "master", "bachelor", "master", "phd"],
-        "job_title": [
-            "ai engineer",
-            "data scientist",
-            "ai engineer",
-            "senior data scientist",
-            "senior ai engineer",
-            "senior data engineer"
-        ],
-        "years_of_experience": [3, 5, 2, 3, 7, 5],
-        "salary": [120000, 210000, 110000, 100000, 220000, 150000],
-    })
-    return df
 
 # type
 def test_split_data_return_type(sample_df):
@@ -29,29 +11,17 @@ def test_split_data_return_type(sample_df):
     assert isinstance(train_df, pd.DataFrame)
     assert isinstance(test_df, pd.DataFrame)
 
-# cols
-def test_split_data_return_cols(sample_df):
-    train_df, test_df = split_data(sample_df)
-
-    assert "job_seniority" in train_df.columns
-    assert "job_group" in train_df.columns
-    assert "job_role" in train_df.columns
-
-    assert "job_seniority" in test_df.columns
-    assert "job_group" in test_df.columns
-    assert "job_role" in test_df.columns
-
 # ratio
 def test_split_data_ratio(sample_df):
-    train_df, test_df = split_data(sample_df, test_size=0.3)
+    n_rows = sample_df.shape[0]
 
-    assert train_df.shape[0] == 4
-    assert test_df.shape[0] == 2
+    _, test_df = split_data(sample_df, test_size=0.33)
 
-    train_df, test_df = split_data(sample_df, test_size=0.5)
+    assert test_df.shape[0] == int(np.ceil(n_rows * 0.33))
 
-    assert train_df.shape[0] == 3
-    assert test_df.shape[0] == 3
+    _, test_df = split_data(sample_df, test_size=0.5)
+
+    assert test_df.shape[0] == int(np.ceil(n_rows * 0.5))
 
 # reproducible
 def test_split_data_random(sample_df):

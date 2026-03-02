@@ -3,12 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.api.router import router as api_router
-from app.db.init import init_db
+# from app.db.init import init_db
 from app.core.config import settings
+from app.services.data_service import data_service
+from app.services.model_service import model_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    # init_db()
+    model_service.load()
+    data_service.load()
     yield
 
 def create_app() -> FastAPI:
@@ -26,7 +30,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    app.include_router(api_router)
+    app.include_router(api_router, prefix="/api/v1")
     return app
 
 

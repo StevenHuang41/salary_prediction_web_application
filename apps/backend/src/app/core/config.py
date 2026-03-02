@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # -------------------------
     ARTIFACTS_DIR: Path = BACKEND_DIR / "artifacts"
     MODEL_FILE: Path = ARTIFACTS_DIR / "model.joblib"
+    METADATA_FILE: Path = ARTIFACTS_DIR / "metadata.json"
 
     # -------------------------
     # Database

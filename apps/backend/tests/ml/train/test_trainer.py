@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import pandas as pd
 import pytest
 import warnings
@@ -69,6 +70,11 @@ def test_trainer_run(monkeypatch, sample_X, tmp_path):
     )
 
     monkeypatch.setattr(
+        "app.ml.train.trainer.settings.METADATA_FILE",
+        tmp_path / "metadata.json"
+    )
+
+    monkeypatch.setattr(
         "app.ml.train.trainer.joblib.dump",
         lambda model, path: Path(tmp_path / "model.pkl").touch()
     )
@@ -77,14 +83,18 @@ def test_trainer_run(monkeypatch, sample_X, tmp_path):
         warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
         trainer = Trainer()
-        result = trainer.run()
-
-
-    assert "best_model" in result
-    assert "best_params" in result
-    assert "mse" in result
-    assert "rmse" in result
-    assert result["rmse"] >= 0
+        trainer.run()
 
     assert (tmp_path / "model.pkl").exists()
+    assert (tmp_path / "metadata.json").exists()
 
+    with open(Path(tmp_path / "metadata.json"), "r") as f:
+        metadata = json.load(f)
+
+    assert "model_name" in metadata
+    assert "params" in metadata
+    assert "mse" in metadata
+    assert "mae" in metadata
+    assert "rmse" in metadata
+    assert "n_train" in metadata
+    assert "n_test" in metadata

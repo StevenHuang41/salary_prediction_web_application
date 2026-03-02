@@ -18,19 +18,24 @@ const InputForm = ({
   const formRef = useRef(null);
 
   const [yearValid, setYearValid] = useState(true);
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [educationLevel, setEducationLevel] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [yearE, setYearE] = useState('');
-  // const [age, setAge] = useState('26');
-  // const [gender, setGender] = useState('female');
-  // const [educationLevel, setEducationLevel] = useState('Master');
-  // const [jobTitle, setJobTitle] = useState('Data Scientist');
-  // const [yearE, setYearE] = useState('8');
+
+  // // production
+  // const [age, setAge] = useState('');
+  // const [gender, setGender] = useState('');
+  // const [educationLevel, setEducationLevel] = useState('');
+  // const [jobTitle, setJobTitle] = useState('');
+  // const [yearE, setYearE] = useState('');
+
+  // test
+  const [age, setAge] = useState('26');
+  const [gender, setGender] = useState('female');
+  const [educationLevel, setEducationLevel] = useState('Master');
+  const [jobTitle, setJobTitle] = useState('Data Scientist');
+  const [yearE, setYearE] = useState('0');
+
   const [jobOptionsLoading, setJobOptionsLoading] = useState(true);
 
-  const ageYearModalTrigger = 
+  const ageYearModalTrigger =
     document.getElementById('ageYearModalTrigger');
 
   const handleSubmit = (e) => {
@@ -39,22 +44,22 @@ const InputForm = ({
 
     // const forms = formRef.current;
     formRef.current.classList.add('was-validated');
-    
+
     // check form has select value
     if (!formRef.current.checkValidity()) {
       setPredictResult(false);
       return;
     }
-    
+
     // check age - year is not lower than 18
     // if ((age - yearE) < 18) {
     //   console.log('18!!!');
-      
+
     //   setYearE('');
     //   ageYearModalTrigger.click();
     //   setYearValid(false);
     //   setPredictResult(false);
-    //   return 
+    //   return
     // }
 
     // set data
@@ -64,14 +69,14 @@ const InputForm = ({
       education_level: educationLevel,
       job_title: jobTitle,
       years_of_experience: yearE,
-    } 
+    }
     getSubmitData(data);
     handleInputFormSubmit();
   };
 
   const handleChange = (e) => {
     const name = e.target.id;
-    
+
     if (name === 'yearESelectInput') {
       if ((age - e.target.value) < 18) {
         formRef.current.classList.add('was-validated');
@@ -111,7 +116,7 @@ const InputForm = ({
     const getData = async () => {
       try {
         const data = await getUniqJobTitle();
-        const options = data.value.map((val) => (
+        const options = data.map((val) => (
           {value: val, text: val}
         ));
         setJobOptions(options);
@@ -127,16 +132,17 @@ const InputForm = ({
   const handleRetrain = async () => {
     setErrFunc(null);
     addToast("Retrain Model ...", "warning")
-    
+
     try {
       setLoadingFunc(true);
-      const res = await retrainModel({
-        age: age,
-        gender: gender,
-        education_level: educationLevel,
-        job_title: jobTitle,
-        years_of_experience: yearE,
-      });
+      const res = await retrainModel()
+      // const res = await retrainModel({
+      //   age: age,
+      //   gender: gender,
+      //   education_level: educationLevel,
+      //   job_title: jobTitle,
+      //   years_of_experience: yearE,
+      // });
       setPredictResult(res.result)
       // console.log(res.message);
       addToast("Retrain model successfully!", "success")
@@ -255,10 +261,10 @@ const InputForm = ({
         `}
       >
 
-        <TermsCheckbox 
+        <TermsCheckbox
           className={`
             col
-            p-0 my-2 
+            p-0 my-2
           `}
           modalId='termsModal'
           labelText='Agree to'
@@ -270,7 +276,7 @@ const InputForm = ({
         <div
           className={`
             col
-            m-0 p-0 
+            m-0 p-0
             d-flex
             align-items-center
             justify-content-md-end

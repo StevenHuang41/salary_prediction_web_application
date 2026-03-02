@@ -1,5 +1,11 @@
-import { useState } from 'react';
-import { predictSalary } from '../api/dataService';
+import { useState, useEffect } from 'react';
+import {
+  predictSalary,
+  retrainModel,
+  resetModel,
+  getModleStatus,
+} from '../api/dataService';
+
 import InputForm from '../components/InputForm';
 import OutputSection from '../components/OutputSection';
 import ErrorPredict from '../components/ErrorPredict';
@@ -8,15 +14,17 @@ import useToast from '../hooks/useToast'
 import MyToast from '../components/Toast';
 
 const HomePage = () => {
-  const [formData, setFormData] = useState(null);
-  const [predictResult, setPredictResult] = useState(null);
-  const [loadingResult, setLoadingResult] = useState(false);
-  const [errResult, setErrResult] = useState(null);
+  const [predictState, setPredictState] = useState({
+    data: null,
+    loading: false,
+    error: null,
+  });
 
+  const [formData, setFormData] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  const [dataAdded, setDataAdded] = useState(false);
-
+  const [isTraning, setIsTraning] = useState(false);
+  
   const { toasts, addToast, removeToast } = useToast();
 
   const handleInputFormSubmit = async () => {
@@ -50,7 +58,7 @@ const HomePage = () => {
         setDataAdded={setDataAdded}
       />
 
-      {errResult ? 
+      {errResult ?
       <ErrorPredict data={errResult}/>
       :
       loadingResult ?
@@ -83,16 +91,6 @@ const HomePage = () => {
     </div>
   </>)
 };
-
-
-// TODO: make frontend test
-// TODO: learn to use docker
-// TODO: make github profolio
-// TODO: make linkdin profolio
-
-// TODO: show every select inputs analytical graph
-// TODO: make code prettier
-
 
 
 export default HomePage;

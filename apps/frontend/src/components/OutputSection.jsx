@@ -35,11 +35,11 @@ const OutputSection = ({
 
     // set ',' in salary string
     setPredictSalary(
-      (predictData.value).toLocaleString('en-US', {
+      (predictData.salary).toLocaleString('en-US', {
         maximumFractionDigits: 2
       })
     );
-    setRangeValue(predictData.value);
+    setRangeValue(predictData.salary);
   }, [predictData]);
 
   // check if value is a valid number
@@ -53,15 +53,15 @@ const OutputSection = ({
   useEffect(() => {
     // set retrain btn disability: if predictSalary is valid
     const valid = isNumber(predictSalary);
-    const previousSalary = predictData?.value.toFixed(2);
+    const previousSalary = predictData?.salary.toFixed(2);
     const changeSalary = (+(predictSalary.replace(/,/g, ""))).toFixed(2);
     setSalaryInputSame(valid && (previousSalary === changeSalary));
-    
+
     // Input is valid when it is a number and previous != changed value
     setIsValidInput(valid && (previousSalary !== changeSalary));
 
 
-    
+
     // if input is valid, fetch plots
     if (!valid) return ;
 
@@ -89,7 +89,7 @@ const OutputSection = ({
     }, 100);
     return () => clearTimeout(timeout);
   }, [predictSalary, predictData]);
-  
+
 
   if (!predictData) return ; //////////////////////////////////////////
 
@@ -103,7 +103,7 @@ const OutputSection = ({
   // handle range input of predict salary change
   const handleRangeChange = (value) => {
     setRangeValue(value);
-    
+
     setPredictSalary(
       Number(value).toLocaleString('en-US', {
         maximumFractionDigits: 2
@@ -113,14 +113,14 @@ const OutputSection = ({
 
   // handle return btn click
   const handleReturn = () => {
-    setRangeValue(predictData.value)
+    setRangeValue(predictData.salary)
     setPredictSalary(
-      (predictData.value).toLocaleString('en-US', {
+      (predictData.salary).toLocaleString('en-US', {
         maximumFractionDigits: 2
       })
     );
   };
-  
+
   // handle reset database
   const handleReset = async() => {
     setErrFunc(null);
@@ -134,7 +134,7 @@ const OutputSection = ({
     } catch (err) {
       setErrFunc(err.message);
       addToast("Reset database failed", "danger")
-    } 
+    }
   };
 
   // handel add data btn click
@@ -158,7 +158,7 @@ const OutputSection = ({
       addToast("Data added successfully!", "success");
     } catch (err) {
       setErrFunc(err.message);
-    } 
+    }
   };
 
 
@@ -193,10 +193,10 @@ const OutputSection = ({
           type="range"
           className="form-range"
           min={(
-            predictData.value - predictData.params.mae
+            predictData.salary - predictData.mae
           ).toFixed(2)}
           max={(
-            predictData.value + predictData.params.mae
+            predictData.salary + predictData.mae
           ).toFixed(2)}
           step="0.01"
           value={rangeValue}
@@ -235,7 +235,7 @@ const OutputSection = ({
         <div
           className={`
             btn btn-outline-info
-            p-2 py-1 
+            p-2 py-1
             text-nowrap
           `}
           onClick={handleAddData}
@@ -248,17 +248,14 @@ const OutputSection = ({
       </>}
 
       <div className="col order-2 order-md-1 px-0">
-      {(salaryInputSame && !isValidInput)  && 
+      {(salaryInputSame && !isValidInput)  &&
         <div className="row">
           <div className="col-12">
             Model {showDetail && `Name`}: {predictData.model_name}<br/>
-            {showDetail && predictData.use_polynomial && 
-              `(use polynomial feature)`
-            }
           </div>
           <div className="col-12">
             {showDetail ? `Mean Absolute Error` : `MAE`}
-            : {(predictData.params.mae).toFixed(2)}
+            : {(predictData.mae).toFixed(2)}
           </div>
         </div>
       }
@@ -284,9 +281,9 @@ const OutputSection = ({
           `}
           onClick={() => {
             if (showDetail) {
-              setRangeValue(predictData.value);
+              setRangeValue(predictData.salary);
               setPredictSalary(
-                (predictData.value).toLocaleString('en-US', {
+                (predictData.salary).toLocaleString('en-US', {
                   maximumFractionDigits: 2
                 })
               );
@@ -328,32 +325,29 @@ const OutputSection = ({
       {(!salaryInputSame || isValidInput) && <>
       <div className="col-12">
         Model Name: {predictData.model_name}<br/>
-        {predictData.use_polynomial && 
-          ` (use polynomial feature)`
-        }
       </div>
 
       <div className="col-">
         Mean Absolute Error: {
-          (predictData.params.mae).toFixed(2)
+          (predictData.mae).toFixed(2)
         }
       </div>
       </>}
 
-      {/* <div className="col">
-        "{import.meta.env.VITE_IP_ADDRESS}"
-      </div> */}
-
       <div className="col">
-        Mean Square Error: {(predictData.params.mse).toFixed(2)}
+        Mean Square Error: {(predictData.mse).toFixed(2)}
       </div>
 
       <div className="col">
-        #Train dataset: {predictData.num_train_dataset}
+        Root Mean Square Error: {(predictData.rmse).toFixed(2)}
       </div>
 
       <div className="col">
-        #Test dataset: {predictData.num_test_dataset}
+        #Train dataset: {predictData.n_train}
+      </div>
+
+      <div className="col">
+        #Test dataset: {predictData.n_test}
       </div>
 
       <div className="col">
@@ -377,7 +371,7 @@ const OutputSection = ({
       <img
         className={`
           col
-          img-fluid  
+          img-fluid
         `}
         src={img1URL}
         alt="Salary Histogram Plot"
@@ -386,7 +380,7 @@ const OutputSection = ({
       <img
         className={`
           col
-          img-fluid  
+          img-fluid
         `}
         src={img2URL}
         alt="Salary Box Plot"

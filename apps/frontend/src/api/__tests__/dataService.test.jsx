@@ -1,6 +1,6 @@
 import { vi, describe, expect, it, beforeEach, afterEach } from 'vitest';
 
-import { api0, api1 } from '../axiosInstance';
+import { api0 } from '../axiosInstance';
 import {
   getUniqJobTitle,
   predictSalary,
@@ -28,7 +28,7 @@ vi.mock('../axiosInstance', () => ({
     get: vi.fn(),
     post: vi.fn(),
   },
-  api1: {
+  api0: {
     get: vi.fn(),
     post: vi.fn(),
   }
@@ -36,15 +36,15 @@ vi.mock('../axiosInstance', () => ({
 
 describe('getUniqJobTitle', () => {
   it('return data when success', async () => {
-    api1.get.mockResolvedValue({ data: { value: ['Data Scientist'] } });
+    api0.get.mockResolvedValue({ data: { value: ['Data Scientist'] } });
     const data = await getUniqJobTitle();
-    expect(api1.get).toHaveBeenCalledWith('/uniq_job_title');
+    expect(api0.get).toHaveBeenCalledWith('/uniq_job_title');
     expect(data).toStrictEqual({ value: ['Data Scientist'] });
   });
 
   it('console error message when api error', async () => {
     const err = new Error('test error');
-    api1.get.mockRejectedValue(err);
+    api0.get.mockRejectedValue(err);
     await getUniqJobTitle();
     expect(logSpy)
     .toHaveBeenCalledWith("Error fetching data:", err.message);
@@ -82,9 +82,9 @@ describe('fetchSalaryHistPlot', () => {
   const testBlob = new Blob(['test'], { type: 'hist/png' });
 
   it('return blob URL when success', async () => {
-    api1.post.mockResolvedValue({ data: testBlob });
+    api0.post.mockResolvedValue({ data: testBlob });
     const url = await fetchSalaryHistPlot(salary);
-    expect(api1.post).toHaveBeenCalledWith(
+    expect(api0.post).toHaveBeenCalledWith(
       "/salary_avxline_plot",
       { salary },
       { responseType: "blob" },
@@ -95,7 +95,7 @@ describe('fetchSalaryHistPlot', () => {
 
   it('return when receiving wrong salary', async () => {
     await fetchSalaryHistPlot(wrongSalary);
-    expect(api1.post).not.toHaveBeenCalled();
+    expect(api0.post).not.toHaveBeenCalled();
   });
 });
 
@@ -105,9 +105,9 @@ describe('fetchSalaryBoxPlot', () => {
   const testBlob = new Blob(['test'], { type: 'box/png' });
 
   it('return blob URL when success', async () => {
-    api1.post.mockResolvedValue({ data: testBlob });
+    api0.post.mockResolvedValue({ data: testBlob });
     const url = await fetchSalaryBoxPlot(salary);
-    expect(api1.post).toHaveBeenCalledWith(
+    expect(api0.post).toHaveBeenCalledWith(
       "/salary_boxplot",
       { salary },
       { responseType: "blob" },
@@ -118,7 +118,7 @@ describe('fetchSalaryBoxPlot', () => {
 
   it('return when receiving wrong salary', async () => {
     await fetchSalaryBoxPlot(wrongSalary);
-    expect(api1.post).not.toHaveBeenCalledWith(
+    expect(api0.post).not.toHaveBeenCalledWith(
       "/salary_boxplot",
       { salary },
       { responseType: "blob" },
@@ -127,18 +127,18 @@ describe('fetchSalaryBoxPlot', () => {
 });
 
 describe('retrainModel', () => {
-  const formData = {
-    age: 39,
-    gender: 'male',
-    education_level: 'master',
-    job_title: 'Data Scientist',
-    years_of_experience: 5
-  };
+  // const formData = {
+  //   age: 39,
+  //   gender: 'male',
+  //   education_level: 'master',
+  //   job_title: 'Data Scientist',
+  //   years_of_experience: 5
+  // };
 
   it('return data when input valid', async () => {
     api0.post.mockResolvedValue({ data: 'return data' });
-    const data = await retrainModel(formData);
-    expect(api0.post).toHaveBeenCalledWith('/retrain_model', formData);
+    const data = await retrainModel();
+    expect(api0.post).toHaveBeenCalledWith('/model/training');
     expect(data).toBe('return data');
   });
 });

@@ -2,72 +2,55 @@ import numpy as np
 import pandas as pd
 from app.ml.data.cleaning import rename_cols, clean_salary, clean_data
 
-def test_rename_cols():
-    df = pd.DataFrame({
-        'Age': [20],
-        'gender': ['Female'],
-        ' education    Level': ["master's degree"],
-        ' Job   title': ['Data Scientist'],
-        ' years  Of experience': [2],
-        '   salary ': [36_000]
-    })
 
-    rename_cols(df)
+def test_rename_cols(raw_column_df):
+    rename_cols(raw_column_df)
 
-    assert df.columns.str.islower().all()
-    assert not df.columns.str.strip().str.contains(r'\s').any()
-    assert not df.columns.str.contains(r'[^a-z0-9_]').any()
+    assert raw_column_df.columns.str.islower().all()
+    assert not raw_column_df.columns.str.strip().str.contains(r'\s').any()
+    assert not raw_column_df.columns.str.contains(r'[^a-z0-9_]').any()
 
-def test_clean_salary():
-    df = pd.DataFrame({
-        'age': [20, 19, 28, 27],
-        'gender': [np.nan, 'male', 'other', 'male'],
-        'education_level': ["master's degree", 'Bachelor', 'PhD', 'high school'],
-        'job_title': ['Data Scientist', 'Data Engineer', 'Data Analyst', 'driver'],
-        'years_of_experience': [2, 1, 3, 5],
-        'salary': [36_000, np.nan, 900_000, 1_000]
-    })
-
-    cleaned = clean_salary(df)
+def test_clean_salary(raw_full_df):
+    cleaned = clean_salary(raw_full_df)
 
     assert cleaned.shape[0] == 1
 
-def test_clean_data():
-    df = pd.DataFrame({
-        'Age': [20, 19, 28, 27, 27],
-        'gender': ['Female', 'male', 'other', 'male', 'male'],
-        'education Level': ["master's degree", 'Bachelor', 'PhD', 'high school', 'high school'],
-        'Job   title': ['Data Scientist', 'Data Engineer', 'Data Analyst', 'driver', 'driver'],
-        ' years  Of experience': [2, 1, 3, 5, 5],
-    })
+def test_clean_data(raw_df):
+    cleaned = clean_data(raw_df)
 
-    cleaned = clean_data(df)
-
-    # check remove nan
+    # check no nan
     assert not cleaned.isna().any().any()
 
     # col: age
     assert cleaned.age.dtype.name == 'float32'
 
     # col: gender
-    assert list(cleaned.gender.unique().sort_values()) == ['female', 'male', 'other']
+    assert list(cleaned["gender"].cat.categories) == \
+        ["female", "male", "other"]
 
     # col: education level
-    assert list(cleaned.education_level.unique().sort_values()) == \
-    ['high_school', 'bachelor', 'master', 'phd']
+    assert list(cleaned["education_level"].cat.categories) == \
+        ["unknown", "high_school", "bachelor", "master", "phd"]
 
     # col: job title
     assert not cleaned.job_title.str.contains(r'\s{2,}').any()
     assert not cleaned.job_title.str.contains(r'juniour').any()
+    assert not cleaned.job_title.str.contains(r'junior').any()
+    assert not cleaned.job_title.str.contains(r'senior').any()
     assert not cleaned.job_title.str.contains(r'rep\b').any()
     assert not cleaned.job_title.str.contains(r'\bman\b').any()
     assert not cleaned.job_title.str.contains(r'director of.*').any()
+    assert not cleaned.job_title.str.contains(r'vp of.*').any()
 
     # col: years of experience
     assert cleaned.years_of_experience.dtype.name == 'float32'
 
-    # check remove incorrect age-experience rows
+    # check removed incorrect age-experience rows
     assert not (cleaned.age - cleaned.years_of_experience < 18).any()
 
-    # check drop duplicated
+    # check dropped duplicated
     assert not (cleaned.duplicated()).any()
+
+    assert "job_seniority" in cleaned.columns
+    assert "job_group" in cleaned.columns
+    assert "job_role" in cleaned.columns

@@ -1,9 +1,9 @@
-import { api0, api1 } from "./axiosInstance";
+import { api0 } from "./axiosInstance";
 
 
 const getUniqJobTitle = async () => {
   try {
-    const res = await api1.get('/uniq_job_title');
+    const res = await api0.get('/job_titles');
     return res.data;
   } catch (err) {
     console.error("Error fetching data:", err.message);
@@ -12,7 +12,7 @@ const getUniqJobTitle = async () => {
 
 const predictSalary = async (formData) => {
   try {
-    const res = await api0.post('/predict', formData);
+    const res = await api0.post('/predictions', formData);
     return res.data;
   } catch (err) {
     console.error("Error predicting salary:", err.message);
@@ -22,8 +22,8 @@ const predictSalary = async (formData) => {
 const fetchSalaryHistPlot = async (salary) => {
   if (salary === '') return ;
 
-  const res = await api1.post(
-    "/salary_avxline_plot",
+  const res = await api0.post(
+    "/images/histogram",
     { salary },
     { responseType: "blob" },
   );
@@ -33,9 +33,9 @@ const fetchSalaryHistPlot = async (salary) => {
 
 const fetchSalaryBoxPlot = async (salary) => {
   if (salary === '') return ;
-  
-  const res = await api1.post(
-    "/salary_boxplot",
+
+  const res = await api0.post(
+    "/images/boxplot",
     { salary },
     { responseType: "blob" },
   );
@@ -43,20 +43,26 @@ const fetchSalaryBoxPlot = async (salary) => {
   return URL.createObjectURL(res.data);
 };
 
-const retrainModel = async (data) => {
-  const res = await api0.post('/retrain_model', data);
+const addData = async (data) => {
+  const res = await api0.post('/records', data);
+  return res.data;
+}
+
+const retrainModel = async () => {
+  const res = await api0.put('/model/training');
   return res.data;
 };
 
 const resetModel = async () => {
-  const res = await api0.post('/reset_model');
+  const res = await api0.put('/model/initial');
   return res.data;
 };
 
-const addData = async (data) => {
-  const res = await api0.post('/add_data', data);
-  return res.data;
+const getModleStatus = async () => {
+  const res = await api0.get('/model/status');
+  return res.data
 }
+
 
 export {
   getUniqJobTitle,
@@ -66,4 +72,5 @@ export {
   retrainModel,
   resetModel,
   addData,
+  getModleStatus,
 };

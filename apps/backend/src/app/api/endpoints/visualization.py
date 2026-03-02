@@ -1,27 +1,25 @@
-from fastapi import APIRouter, Response, Depends
+from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 
-from app.schemas.salary import SalaryValue
-from app.db.repositories.salary_repository import SalaryRepository
-from app.db.dependencies import get_salary_repository
-from my_package.data_visualization import salary_hist_image, salary_box_image
+from app.schemas.plot import PlotRequest
+from app.services import data_service
 
 router = APIRouter()
 
-@router.post("/salary_avxline_plot")
-async def salary_hist_api(
-    data: SalaryValue,
-    repo: SalaryRepository = Depends(get_salary_repository)
-):
-    df = repo.fetch_all()
-    img = salary_hist_image(data.salary, df)
-    return Response(content=img, media_type="image/png")
+@router.post("/images/histogram")
+async def post_histogram(request: PlotRequest):
+    img = data_service.plot_histogram(request.salary)
+    return StreamingResponse(
+        img,
+        media_type="image/png"
+    )
 
-@router.post("/salary_boxplot")
-async def salary_boxplot_api(
-    data: SalaryValue,
-    repo: SalaryRepository = Depends(get_salary_repository)
-):
-    df = repo.fetch_all()
-    img = salary_box_image(data.salary, df)
-    return Response(content=img, media_type="image/png")
+@router.post("/images/boxplot")
+async def post_boxplot(request: PlotRequest):
+    img = data_service.plot_box(request.salary)
+    return StreamingResponse(
+        img,
+        media_type="image/png"
+    )
+
 
