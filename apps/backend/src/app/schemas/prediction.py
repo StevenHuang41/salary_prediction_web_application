@@ -16,14 +16,3 @@ class PredictResponse(BaseModel):
     n_train: int
     n_test: int
 
-# class FullData(RowData):
-#     salary: float
-#
-# class SalaryPrediction(BaseModel):
-#     model_name: str
-#     use_polynomial: bool
-#     value: float
-#     params: dict
-#
-#
-#

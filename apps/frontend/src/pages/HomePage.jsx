@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   predictSalary,
   retrainModel,
   resetModel,
-  getModleStatus,
+  getModelStatus,
 } from '../api/dataService';
 
 import InputForm from '../components/InputForm';
@@ -21,66 +21,168 @@ const HomePage = () => {
   });
 
   const [formData, setFormData] = useState(null);
-  const [showDetail, setShowDetail] = useState(false);
 
-  const [isTraning, setIsTraning] = useState(false);
-  
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingType, setTrainingType] = useState(null);
+
   const { toasts, addToast, removeToast } = useToast();
 
-  const handleInputFormSubmit = async () => {
-    setLoadingResult(true);
-    setErrResult(null);
+  const toastShownRef = useRef(false);
+  const hasShownReloadToast = useRef(false);
+
+  const [dbChanged, setDBChanged] = useState(false);
+
+  const showRetrainBtn = dbChanged && !isTraining
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await getModelStatus();
+        setIsTraining(res.is_training);
+        if (res.is_training && !hasShownReloadToast.current) {
+          hasShownReloadToast.current = true;
+          addToast("Model is still training ...", "info");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    checkStatus();
+  }, []);
+
+  const handlePredict = async () => {
+    if (!formData) return;
+
+    setPredictState({
+      data: null,
+      loading: true,
+      error: null,
+    });
 
     try {
-      // console.log(formData);
       const res = await predictSalary(formData);
-      // console.log(res);
-      setPredictResult(res);
+
+      setPredictState({
+        data: res,
+        loading: false,
+        error: null,
+      });
+
     } catch (err) {
-      setErrResult(err.message);
-    } finally {
-      setLoadingResult(false)
+      setPredictState({
+        data: null,
+        loading: false,
+        error: err.message,
+      });
+    }
+
+  };
+
+  const handleRetrain = async () => {
+    try {
+      setIsTraining(true);
+      setTrainingType("retrain")
+      await retrainModel();
+      setDBChanged(false);
+      addToast("Model retraining ...", "info");
+    } catch (err) {
+      setIsTraining(false);
+      setTrainingType(null)
+      addToast("Failed to retrain model!", "danger")
     }
   };
 
+  const handleReset = async () => {
+    try {
+      setIsTraining(true);
+      setTrainingType("reset")
+      await resetModel();
+      setDBChanged(true);
+      addToast("Model resetting ...", "info");
+    } catch (err) {
+      setIsTraining(false);
+      setTrainingType(null)
+      addToast("Failed to reset model!", "danger")
+    }
+  };
+
+  useEffect(() => {
+    if (!isTraining) return;
+
+    toastShownRef.current = false;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getModelStatus();
+
+        if (!res.is_training && !toastShownRef.current) {
+          toastShownRef.current = true
+
+          if (trainingType === "retrain") {
+            addToast("Model training completed!", "success");
+          }
+          if (trainingType === "reset") {
+            addToast("Model resetting completed!", "success");
+          }
+
+          setIsTraining(false);
+          setTrainingType(null)
+        }
+      } catch (err) {
+        setIsTraining(false);
+        setTrainingType(null)
+      }
+    }, 3000)
+    return () => clearInterval(interval);
+  }, [isTraining]);
+
+  const renderPredictSection = () => {
+    if (predictState.error) {
+      return <ErrorPredict data={predictState.error} />;
+    }
+
+    if (predictState.loading) {
+      return (
+        <div className="loading-container">
+          <LoadingResult
+            loadingText="Loading ..."
+            setStyle={{fontSize: "5em"}}
+            setClass="mt-5 mt-sm-3"
+            setTextClass="d-none d-sm-flex"
+          />
+        </div>
+      );
+    }
+
+    if (predictState.data) {
+      return (
+        <OutputSection
+          dataFromForm={formData}
+          predictData={predictState.data}
+          addToast={addToast}
+          isTraining={isTraining}
+          onRetrain={handleRetrain}
+          onReset={handleReset}
+          setDBChanged={setDBChanged}
+          showRetrainBtn={showRetrainBtn}
+        />
+      )
+    }
+
+    return null;
+  };
+
   return (<>
-    <div className="container">
+    <div className="container mb-5">
       <InputForm
-        getSubmitData={setFormData}
-        handleInputFormSubmit={handleInputFormSubmit}
-        setPredictResult={setPredictResult}
-        showDetail={showDetail}
-        addToast={addToast}
-        loadingFunc={loadingResult}
-        setLoadingFunc={setLoadingResult}
-        setErrFunc={setErrResult}
-        dataAdded={dataAdded}
-        setDataAdded={setDataAdded}
+        onSubmit={handlePredict}
+        setPredictState={setPredictState}
+        setFormData={setFormData}
+        isPredicting={predictState.loading}
       />
 
-      {errResult ?
-      <ErrorPredict data={errResult}/>
-      :
-      loadingResult ?
-      <div className="loading-container">
-        <LoadingResult
-          loadingText="Loading ..."
-          setStyle={{fontSize: "5em"}}
-          setClass="mt-5 mt-sm-3"
-          setTextClass="d-none d-sm-flex"
-        />
-      </div>
-      :
-      predictResult &&
-      <OutputSection
-        dataFromForm={formData}
-        predictData={predictResult}
-        setErrFunc={setErrResult}
-        addToast={addToast}
-        showDetail={showDetail}
-        setShowDetail={setShowDetail}
-        setDataAdded={setDataAdded}
-      />}
+      {renderPredictSection()}
 
       {/* toasts */}
       <MyToast

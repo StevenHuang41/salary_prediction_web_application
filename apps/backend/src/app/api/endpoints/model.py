@@ -12,17 +12,17 @@ async def model_retrain(background_tasks: BackgroundTasks):
         return {
             "status": "already_training"
         }
-    background_tasks.add_task(model_service.retrain, data_service.df)
+    background_tasks.add_task(model_service.train, data_service.df)
     return {
         "status": "training_started"
     }
 
 @router.put("/model/initial")
-async def model_reset(background_tasks: BackgroundTasks):
-    data_service.reset()
-    background_tasks.add_task(model_service.retrain)
+async def model_reset():
+    data_size = data_service.reset()
     return {
-        "status": "initialization_started"
+        "status": "initialized",
+        "data_size": data_size
     }
 
 @router.get("/model/status")
@@ -30,3 +30,4 @@ async def model_status():
     return {
         "is_training": model_service.get_status()
     }
+

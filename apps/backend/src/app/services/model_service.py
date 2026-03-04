@@ -11,12 +11,12 @@ class ModelService:
         self._is_training = False
 
     def load(self):
-        self.model = joblib.load(settings.MODEL_FILE)
+        self.model = joblib.load(settings.model_file)
 
-        with open(settings.METADATA_FILE, "r") as f:
+        with open(settings.metadata_file, "r") as f:
             self.metadata = json.load(f)
 
-    def retrain(self, df=None):
+    def train(self, df=None):
         self._is_training = True
         trainer = Trainer(df)
         trainer.run()
@@ -25,7 +25,7 @@ class ModelService:
 
     def check(self):
         if self.model is None or self.metadata == {}:
-            self.retrain()
+            self.train()
 
     def predict(self, df):
         self.check()

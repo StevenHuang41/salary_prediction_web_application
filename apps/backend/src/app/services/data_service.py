@@ -17,7 +17,7 @@ class DataService:
             return
 
         if self.df.empty:
-            self.df = pd.read_csv(settings.RAW_DATA_FILE)
+            self.df = pd.read_csv(settings.raw_data_file)
 
         self.df = clean_data(self.df, has_target_col=True)
         self._is_load = True
@@ -39,13 +39,15 @@ class DataService:
         new_df = pd.DataFrame([new_recored])
         self._job_title_cache = None
         self.df.loc[len(self.df)] = clean_data(new_df).iloc[0].to_dict()
+        print('addre')
         return len(self.df)
 
-    def reset(self):
+    def reset(self) -> int:
         self.df = pd.DataFrame()
         self._job_title_cache = None
         self._is_load = False
         self.load()
+        return len(self.df)
 
 
 data_service = DataService()

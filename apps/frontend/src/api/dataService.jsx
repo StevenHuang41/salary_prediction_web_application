@@ -58,7 +58,7 @@ const resetModel = async () => {
   return res.data;
 };
 
-const getModleStatus = async () => {
+const getModelStatus = async () => {
   const res = await api0.get('/model/status');
   return res.data
 }
@@ -72,5 +72,5 @@ export {
   retrainModel,
   resetModel,
   addData,
-  getModleStatus,
+  getModelStatus,
 };

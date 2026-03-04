@@ -28,7 +28,7 @@ class Trainer:
 
     def load_data(self):
         if self.df.empty:
-            self.df = pd.read_csv(settings.RAW_DATA_FILE)
+            self.df = pd.read_csv(settings.raw_data_file)
 
         self.df = clean_data(self.df, has_target_col=True)
         train_df, test_df = split_data(self.df)
@@ -77,7 +77,7 @@ class Trainer:
 
 
     def save(self):
-        joblib.dump(self.model, settings.MODEL_FILE)
+        joblib.dump(self.model, settings.model_file)
 
         metadata = {
             "model_name": self.best_model_name,
@@ -87,8 +87,10 @@ class Trainer:
             "rmse": self.rmse,
             "n_train": self.n_train,  # type: ignore
             "n_test": self.n_test,  # type: ignore
+            "data_size": len(self.df)
+
         }
-        with open(settings.METADATA_FILE, "w") as f:
+        with open(settings.metadata_file, "w") as f:
             json.dump(metadata, f, indent=4, default=str)
 
     def run(self):

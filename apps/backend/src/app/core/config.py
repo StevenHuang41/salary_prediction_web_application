@@ -4,47 +4,51 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
 
-    # -------------------------
-    # Project Root
-    # -------------------------
-    PROJECT_ROOT: Path = Path(__file__).resolve().parents[5]
-    BACKEND_DIR: Path = PROJECT_ROOT / "apps" / "backend"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
+
+    backend_dir: Path = Path(__file__).resolve().parents[3]
 
     # -------------------------
-    # Data Directories (project-level)
+    # Data Directories
     # -------------------------
-    DATA_DIR: Path = PROJECT_ROOT / "data"
-    RAW_DATA_DIR: Path = DATA_DIR / "raw"
-    PROCESSED_DATA_DIR: Path = DATA_DIR / "processed"
-    RAW_DATA_FILE: Path = RAW_DATA_DIR / "salary_data.csv"
+    data_dir: Path = Path("./data")
+    
+    @property
+    def raw_data_dir(self) -> Path:
+        return self.data_dir / "raw"
+        
+    @property
+    def processed_data_dir(self) -> Path:
+        return self.data_dir / "processed"
+         
+    @property
+    def raw_data_file(self) -> Path:
+        return self.raw_data_dir / "salary_data.csv"
+
 
     # -------------------------
     # Artifacts (backend-level)
     # -------------------------
-    ARTIFACTS_DIR: Path = BACKEND_DIR / "artifacts"
-    MODEL_FILE: Path = ARTIFACTS_DIR / "model.joblib"
-    METADATA_FILE: Path = ARTIFACTS_DIR / "metadata.json"
+    artifacts_dir: Path = backend_dir / "artifacts"
+    model_file: Path = artifacts_dir / "model.joblib"
+    metadata_file: Path = artifacts_dir / "metadata.json"
 
     # -------------------------
     # Database
     # -------------------------
-    DATABASE_URL: str | None = None
-
-    SQLITE_FILE: Path = BACKEND_DIR / "app" / "db" / "app.db"
+    database_url: str | None = None
 
     # -------------------------
     # CORS
     # -------------------------
-    FRONTEND_ORIGINS: str = "http://localhost:3000"
-
-    model_config = SettingsConfigDict(
-        env_file=(".env", ".env.local"),
-        extra="ignore",
-    )
+    frontend_origins: str = "http://localhost:3000"
 
     @property
     def frontend_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.FRONTEND_ORIGINS.split(",")]
+        return [o.strip() for o in self.frontend_origins.split(",")]
 
 
 settings = Settings()
