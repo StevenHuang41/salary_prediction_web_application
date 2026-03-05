@@ -9,13 +9,12 @@ const InputForm = ({
   setPredictState,
   setFormData,
   isPredicting,
-
 }) => {
   const formRef = useRef(null);
-  const [jobOptions, setJobOptions] = useState([]);
-  const [jobOptionsLoading, setJobOptionsLoading] = useState(true);
 
-  const [yearValid, setYearValid] = useState(true);
+  const [jobOptions, setJobOptions] = useState([]);
+
+  const [loadJobState, setLoadJobState] = useState("loading");
 
   // production
   const [age, setAge] = useState('');
@@ -29,19 +28,28 @@ const InputForm = ({
   // const [educationLevel, setEducationLevel] = useState('Master');
   // const [jobTitle, setJobTitle] = useState('Data Scientist');
   // const [yearE, setYearE] = useState('0');
+  //
+  const yearValid =
+    age === "" || yearE === "" || (Number(age) - Number(yearE)) >= 18;
 
   // get job title
   useEffect(() => {
     const getData = async () => {
       try {
         const data = await getUniqJobTitle();
-        setJobOptions(data.map((val) => ( {value: val, text: val} )))
-        setJobOptionsLoading(false)
+
+        if (!data || data.length === 0) {
+          setLoadJobState("empty");
+          return;
+        }
+
+        setJobOptions(data.map((val) => ({value: val, text: val})));
+        setLoadJobState("success");
       } catch (err) {
         console.error(err);
+        setLoadJobState("error");
       }
     };
-    setJobOptionsLoading(true);
     getData();
   }, []);
 
@@ -61,30 +69,21 @@ const InputForm = ({
       error: null,
     });
 
-    const isLogicValid = (Number(age) - Number(yearE)) >= 18;
-    if (!isLogicValid && age !== "" && yearE !== "") {
-      setYearValid(false);
-    } else {
-      setYearValid(true);
-    }
-
   }, [age, gender, educationLevel, jobTitle, yearE]);
 
   // submit
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const isLogicValid = (Number(age) - Number(yearE)) >= 18;
-
-    if (!isLogicValid) {
-      setYearValid(false);
-      setAge("");
-      setYearE("");
-      return;
-    }
     formRef.current.classList.add('was-validated');
 
     if (!formRef.current.checkValidity()) return;
+
+    if (!yearValid) {
+      setYearE("");
+      return;
+    }
+
     onSubmit();
   };
 
@@ -111,20 +110,20 @@ const InputForm = ({
     {/* form */}
     <form
       id="InputForm"
-      className={`needs-validation`}
+      className="needs-validation"
       noValidate
       ref={formRef}
       onSubmit={handleSubmit}
     >
-      <div className={`row row-cols-1 row-cols-md-2 g-2`} >
+      <div className="row row-cols-1 row-cols-md-2 g-2">
 
         <SelectInput
           className="col col-xl-2"
-          selectId='ageSelectInput'
+          selectId="ageSelectInput"
           options={ageOptions}
-          invalidFeedbackText='Please select a valid age.'
           value={age}
-          onChange={e => setAge(e.target.value)}
+          onChange={(e) => setAge(e.target.value)}
+          invalidFeedbackText="Please select a valid age."
         >
           Age
         </SelectInput>
@@ -132,15 +131,15 @@ const InputForm = ({
 
         <SelectInput
           className="col col-xl-2"
-          selectId='genderSelectInput'
+          selectId="genderSelectInput"
           options={[
             {value: 'male', text: 'Male'},
             {value: 'female', text: 'Female'},
             {value: 'other', text: 'Other'},
           ]}
-          invalidFeedbackText='Please select a gender.'
           value={gender}
-          onChange={e => setGender(e.target.value)}
+          onChange={(e) => setGender(e.target.value)}
+          invalidFeedbackText="Please select a gender."
         >
           Gender
         </SelectInput>
@@ -148,7 +147,7 @@ const InputForm = ({
 
         <SelectInput
           className="col col-xl-3"
-          selectId='eduLevSelectInput'
+          selectId="eduLevSelectInput"
           options={[
             {value: 'No specified', text: 'No specified'},
             {value: 'High School', text: 'High School'},
@@ -156,35 +155,37 @@ const InputForm = ({
             {value: 'Master', text: 'Master'},
             {value: 'PhD', text: 'PhD'},
           ]}
-          invalidFeedbackText='Please select an education level.'
           value={educationLevel}
-          onChange={e => setEducationLevel(e.target.value)}
+          onChange={(e) => setEducationLevel(e.target.value)}
+          invalidFeedbackText="Please select an education level."
         >
           Education level
         </SelectInput>
 
         <SelectInput
           className="col col-xl-3"
-          selectId='jobTitleSelectInput'
+          selectId="jobTitleSelectInput"
           options={jobOptions}
           value={jobTitle}
+          onChange={(e) => setJobTitle(e.target.value)}
           invalidFeedbackText='Please select a job title.'
-          onChange={e => setJobTitle(e.target.value)}
-          isLoadingOptions={jobOptionsLoading}
+          isLoadingOptions={loadJobState === "loading"}
         >
           Job title
         </SelectInput>
 
         <SelectInput
           className="col col-xl-2"
-          selectId='yearESelectInput'
+          selectId="yearESelectInput"
           options={yearEOptions}
           value={yearE}
+          onChange={(e) => setYearE(e.target.value)}
+          isValid={yearValid}
           invalidFeedbackText={
-            yearValid ? 'Please select a valid number.' :
-            `The years of experience should not exceed ${age - 18}.`
+            yearValid
+              ? "Please select a valid number."
+              : `The years of experience should not exceed ${age - 18}.`
           }
-          onChange={e => setYearE(e.target.value)}
         >
           Years of experience
         </SelectInput>
@@ -194,20 +195,16 @@ const InputForm = ({
         className={`
           row row-cols-1 row-cols-md-2
           mx-0 mt-1
-          d-flex
-          align-items-center
+          d-flex align-items-center
         `}
       >
 
         <TermsCheckbox
-          className={`
-            col
-            p-0 my-2
-          `}
-          modalId='termsModal'
-          labelText='Agree to'
-          btnText='terms and conditions'
-          invalidFeedbackText='You must agree before submitting.'
+          className="col p-0 my-2"
+          modalId="termsModal"
+          labelText="Agree to"
+          btnText="terms and conditions"
+          invalidFeedbackText="You must agree before submitting."
         />
 
         <div
@@ -220,7 +217,7 @@ const InputForm = ({
           `}
         >
           <button
-            className={`btn btn-primary`}
+            className="btn btn-primary"
             type="submit"
             id="predictSalaryBtn"
             disabled={isPredicting}
@@ -233,15 +230,13 @@ const InputForm = ({
     </form>
 
     <button
-      id='ageYearModalTrigger'
+      id="ageYearModalTrigger"
       data-bs-toggle="modal"
-      data-bs-target={'#ageYearModal'}
-      style={{display: 'none'}}
+      data-bs-target={"#ageYearModal"}
+      style={{display: "none"}}
     />
 
-    <AgeYearsModal
-      id="ageYearModal"
-    />
+    <AgeYearsModal id="ageYearModal" />
   </>)
 };
 
