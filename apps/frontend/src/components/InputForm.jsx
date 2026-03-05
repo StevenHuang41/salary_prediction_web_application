@@ -77,7 +77,14 @@ const InputForm = ({
 
     formRef.current.classList.add('was-validated');
 
-    if (!formRef.current.checkValidity()) return;
+    if (!formRef.current.checkValidity()) {
+      setPredictState({
+        data: null,
+        loading: null,
+        error: null,
+      });
+      return;
+    }
 
     if (!yearValid) {
       setYearE("");

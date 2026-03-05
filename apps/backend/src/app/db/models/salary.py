@@ -7,7 +7,7 @@ from app.db.base import Base
 class SalaryRecord(Base):
     __tablename__ = "salary_records"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     age: Mapped[int] = mapped_column(Integer)
     gender: Mapped[str] = mapped_column(String(8))
