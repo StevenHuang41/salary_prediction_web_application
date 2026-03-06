@@ -1,9 +1,11 @@
 # 📈 Salary Prediction Web Application
 
-A full-stack machine learning application that predicts real-time salary predictions through a production-ready pipeline.
-This project includes automated data preprocessing, feature engineering, hyperparameter optimization, model retraining, and interactive UI –– all containerized for scalable deployment.
+A full-stack machine learning application that predicts salaries through a production-style ML pipeline.
+
+This project includes automated data preprocessing, feature engineering, hyperparameter optimization, model retraining, and interactive prediction UI –– all containerized for scalable deployment.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 
 ## 🔎 Overview
 
