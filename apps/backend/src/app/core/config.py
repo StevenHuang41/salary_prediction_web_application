@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         return self.backend_dir / "artifacts"
 
     @property
-    def model_file(self) ->    Path:
+    def model_file(self) -> Path:
         return self.artifacts_dir / "model.joblib"
 
     @property

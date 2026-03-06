@@ -262,7 +262,7 @@ const OutputSection = ({
           </div>
       </div>
 
-      <div className="row gx-2">
+      <div className="row g-2">
           {showDetail && !isSameAsPredict && (<>
           <div className="col-auto order-2 order-md-1">
             <div

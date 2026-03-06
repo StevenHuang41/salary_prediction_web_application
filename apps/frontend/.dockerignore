@@ -1,8 +1,6 @@
 Dockerfile
 .gitignore
 
-README.md
-
 build/
 coverage/
 node_modules/
