@@ -5,14 +5,24 @@ from contextlib import asynccontextmanager
 from app.api.router import router as api_router
 from app.db import init_db
 from app.core.config import settings
+from app.db.session import SessionLocal
+from app.repositories.salary_repository import SalaryRepository
 from app.services.data_service import data_service
 from app.services.model_service import model_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    db = SessionLocal()
+    repo = SalaryRepository()
+
+    if repo.count(db) == 0:
+        data_service.seed(db)
+
     model_service.load()
-    data_service.load()
+    data_service.load(db)
+    
+    db.close()
     yield
 
 def create_app() -> FastAPI:

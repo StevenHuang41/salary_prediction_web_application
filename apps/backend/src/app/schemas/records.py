@@ -8,4 +8,5 @@ class AddRecordRequest(SalaryFeatures):
 
 class AddRecordResponse(BaseModel):
     status: str
+    id: int
 

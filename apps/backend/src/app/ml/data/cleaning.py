@@ -28,10 +28,13 @@ def clean_salary(
     return df
 
 def clean_data(
-    df: pd.DataFrame,
+    df: pd.DataFrame | None = None,
     has_target_col: bool = False,
     **kws,
-) -> pd.DataFrame:
+):
+    if df is None or df.empty:
+        return
+
     df = df.copy()
 
     # rename column names

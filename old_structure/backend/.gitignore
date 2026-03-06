@@ -1,9 +1,0 @@
-.env.local
-
-.venv/
-
-best_performance/
-bayesianOptimization_NN_model/
-images/
-
-t.ipynb

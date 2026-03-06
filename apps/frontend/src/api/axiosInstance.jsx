@@ -2,17 +2,10 @@ import axios from 'axios';
 
 const api0 = axios.create({
   // depends on frontend address
-  baseURL: `${import.meta.env.VITE_IP_ADDRESS}:8000/api/v1`,
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/v1`,
   headers: {
     'Content-Type': 'application/json'
   }
 });
-
-// const api1 = axios.create({
-//   baseURL: `${import.meta.env.VITE_IP_ADDRESS}:8001/api/v1`,
-//   headers: {
-//     'Content-Type': 'application/json'
-//   }
-// });
 
 export { api0 };

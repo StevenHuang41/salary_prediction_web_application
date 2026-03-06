@@ -1,0 +1,108 @@
+#! /usr/bin/env python3
+
+import socket
+from pathlib import Path
+import subprocess
+import sys
+
+
+ENV_FILE = Path(".env")
+
+def get_ip_address() -> str:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try :
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+    finally :
+        s.close()
+
+def update_env(ip: str, b_port=8000, f_port=3000) -> None:
+    print(f"local IP address: {ip}")
+    if not ENV_FILE.exists():
+        raise FileNotFoundError(".env file not found")
+
+    lines = ENV_FILE.read_text().splitlines()
+
+    new_lines = []
+    for line in lines:
+        if line.startswith("VITE_API_BASE_URL"):
+            new_lines.append(f"VITE_API_BASE_URL=http://{ip}:{b_port}")
+
+        elif line.startswith("FRONTEND_ORIGINS"):
+            new_lines.append(
+                f"FRONTEND_ORIGINS=http://localhost:{f_port},http://{ip}:{f_port}"
+            )
+        else :
+            new_lines.append(line)
+
+    ENV_FILE.write_text("\n".join(new_lines))
+    print("Updated .env with LAN IP")
+
+
+def show_usage() -> None:
+    print('Usage:')
+    print('  setup                  # Set IP address')
+    print('  setup [-b|--build]     # Set IP and run docker compose up --build')
+    print('  setup -d               # Run docker compose down')
+    print('  setup -dv              # Run docker compose down and clear database volume')
+    print('  setup -db              # Restart the system')
+    print('  setup -dbv             # Rebuild the system with new database volume')
+    print('  setup [-h|--help]      # Show usage')
+
+
+def docker_build():
+    ip = get_ip_address()
+    update_env(ip)
+    print("=" * 50)
+    print(f"\nFrontend: http://{ip}:3000")
+    print(f"API docs: http://{ip}:8000\n")
+    print("=" * 50)
+    subprocess.run(
+        ["docker", "compose", "up", "--build", "--force-recreate"],
+    )
+
+
+def docker_down(*, clean_db_volume=False):
+    cli_list = ["docker", "compose", "down"]
+    if clean_db_volume:
+        cli_list.append("-v")
+
+    subprocess.run(cli_list, check=True)
+
+
+def main():
+    if len(sys.argv) == 1:
+        update_env(get_ip_address())
+
+    elif len(sys.argv) == 2:
+        if sys.argv[1] in {'-b', "--build"}:
+            docker_build()
+
+        elif sys.argv[1] == '-d':
+            docker_down()
+
+        elif sys.argv[1] == '-dv':
+            docker_down(clean_db_volume=True)
+
+        elif sys.argv[1].startswith('-db'):
+            docker_down(clean_db_volume=True if 'v' in sys.argv[1] else False)
+            docker_build()
+
+        elif sys.argv[1] in {"-h", "--help"}:
+            show_usage()
+
+        else :
+            print('Error: Invalid argument.\n')
+            show_usage()
+            sys.exit(1)
+
+    else :
+        print('Error: Too many arguments.\n')
+        show_usage()
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+

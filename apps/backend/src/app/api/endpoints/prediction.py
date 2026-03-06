@@ -1,6 +1,8 @@
-from fastapi import APIRouter
 import pandas as pd
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
+from app.db.deps import get_db
 from app.ml.data.cleaning import clean_data
 from app.schemas.prediction import PredictRequest, PredictResponse
 from app.services.model_service import model_service
@@ -9,11 +11,14 @@ from app.services.model_service import model_service
 router = APIRouter()
 
 @router.post("/predictions", response_model=PredictResponse)
-async def predict(request: PredictRequest):
+async def predict(
+    request: PredictRequest,
+    db: Session = Depends(get_db)
+):
     df = pd.DataFrame([request.model_dump()])
     df = clean_data(df)
-    salary = model_service.predict(df)[0]
-    metadata = model_service.get_metadata()
+    salary = model_service.predict(db, df)[0]
+    metadata = model_service.get_metadata(db)
 
     return PredictResponse(
         salary=float(salary),

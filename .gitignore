@@ -1,17 +1,17 @@
-# backend
 .DS_Store
 __pycache__
 
-/images/
-
 .env
+.venv
 
-/data/raw
+/data/*
+!/data/raw
+!/data/processed/
 
 test.*
 
 *.egg.info/
 
+# backend
 /apps/backend/artifacts/*
 !/apps/backend/artifacts/
-
