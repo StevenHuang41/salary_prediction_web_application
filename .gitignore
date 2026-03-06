@@ -2,16 +2,15 @@
 __pycache__
 
 .env
-.venv
 
 /data/*
 !/data/raw
 !/data/processed/
 
-test.*
-
-*.egg.info/
+*.egg-info/
 
 # backend
+.venv
+
 /apps/backend/artifacts/*
 !/apps/backend/artifacts/

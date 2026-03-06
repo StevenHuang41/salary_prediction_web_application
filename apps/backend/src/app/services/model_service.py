@@ -14,7 +14,11 @@ class ModelService:
         self.metadata = {}
         self._is_training = False
 
-    def load(self):
+    def load(self, db: Session):
+        if not settings.model_file.exists() or not settings.metadata_file.exists():
+            print("Model files missing, start training ...")
+            self.train(db)
+
         self.model = joblib.load(settings.model_file)
 
         with open(settings.metadata_file, "r") as f:
@@ -22,13 +26,13 @@ class ModelService:
 
     def train(self, db: Session):
         self._is_training = True
-        
+
         df = self.repo.get_dataframe(db)
-        
+
         trainer = Trainer(df)
         trainer.run()
-        self.load()
-        
+        self.load(db)
+
         self._is_training = False
 
     def check(self, db):
