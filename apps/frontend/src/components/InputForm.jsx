@@ -39,7 +39,6 @@ const InputForm = ({
         const data = await getUniqJobTitle();
 
         if (!data || data.length === 0) {
-          setLoadJobState("empty");
           return;
         }
 
@@ -75,6 +74,11 @@ const InputForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!yearValid) {
+      setYearE("");
+      return;
+    }
+
     formRef.current.classList.add('was-validated');
 
     if (!formRef.current.checkValidity()) {
@@ -83,11 +87,6 @@ const InputForm = ({
         loading: null,
         error: null,
       });
-      return;
-    }
-
-    if (!yearValid) {
-      setYearE("");
       return;
     }
 
@@ -227,6 +226,7 @@ const InputForm = ({
             className="btn btn-primary"
             type="submit"
             id="predictSalaryBtn"
+            data-testid="predictSalaryBtn"
             disabled={isPredicting}
           >
             {isPredicting ? "Predicting ..." : "Predict Salary"}

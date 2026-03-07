@@ -9,6 +9,7 @@ import {
   retrainModel,
   resetModel,
   addData,
+  getModelStatus,
 } from '../dataService';
 
 let logSpy;
@@ -27,18 +28,16 @@ vi.mock('../axiosInstance', () => ({
   api0: {
     get: vi.fn(),
     post: vi.fn(),
-  },
-  api0: {
-    get: vi.fn(),
-    post: vi.fn(),
+    put: vi.fn(),
   }
 }));
 
 describe('getUniqJobTitle', () => {
+
   it('return data when success', async () => {
     api0.get.mockResolvedValue({ data: { value: ['Data Scientist'] } });
     const data = await getUniqJobTitle();
-    expect(api0.get).toHaveBeenCalledWith('/uniq_job_title');
+    expect(api0.get).toHaveBeenCalledWith('/job_titles');
     expect(data).toStrictEqual({ value: ['Data Scientist'] });
   });
 
@@ -63,7 +62,7 @@ describe('predictSalary', () => {
   it('return data when success', async () => {
     api0.post.mockResolvedValue({ data: { value: 1234 } });
     const data = await predictSalary(formData);
-    expect(api0.post).toHaveBeenCalledWith('/predict', formData);
+    expect(api0.post).toHaveBeenCalledWith('/predictions', formData);
     expect(data).toEqual({ value: 1234 });
   });
 
@@ -85,7 +84,7 @@ describe('fetchSalaryHistPlot', () => {
     api0.post.mockResolvedValue({ data: testBlob });
     const url = await fetchSalaryHistPlot(salary);
     expect(api0.post).toHaveBeenCalledWith(
-      "/salary_avxline_plot",
+      "/images/histogram",
       { salary },
       { responseType: "blob" },
     );
@@ -108,7 +107,7 @@ describe('fetchSalaryBoxPlot', () => {
     api0.post.mockResolvedValue({ data: testBlob });
     const url = await fetchSalaryBoxPlot(salary);
     expect(api0.post).toHaveBeenCalledWith(
-      "/salary_boxplot",
+      "/images/boxplot",
       { salary },
       { responseType: "blob" },
     );
@@ -127,36 +126,18 @@ describe('fetchSalaryBoxPlot', () => {
 });
 
 describe('retrainModel', () => {
-  // const formData = {
-  //   age: 39,
-  //   gender: 'male',
-  //   education_level: 'master',
-  //   job_title: 'Data Scientist',
-  //   years_of_experience: 5
-  // };
-
-  it('return data when input valid', async () => {
-    api0.post.mockResolvedValue({ data: 'return data' });
-    const data = await retrainModel();
-    expect(api0.post).toHaveBeenCalledWith('/model/training');
-    expect(data).toBe('return data');
+  it('calls model retrain api successfully', async () => {
+    api0.put.mockResolvedValue({ data: {} });
+    await retrainModel();
+    expect(api0.put).toHaveBeenCalledWith('/model/training');
   });
 });
 
 describe('resetModel', () => {
-  it('return data', async () => {
-    api0.post.mockResolvedValue({
-      data: {
-        status: 'success',
-        message: 'successfully reset database',
-      }
-    });
-    const data = await resetModel();
-    expect(data).toStrictEqual({
-      status: 'success',
-      message: 'successfully reset database',
-    });
-    expect(api0.post).toHaveBeenCalledWith('/reset_model');
+  it('calls model reset api successfully', async () => {
+    api0.put.mockResolvedValue({ data: {} });
+    await resetModel();
+    expect(api0.put).toHaveBeenCalledWith('/model/initial');
   });
 });
 
@@ -170,10 +151,18 @@ describe('addData', () => {
     salary: 130000,
   };
 
-  it('return data when input valid', async () => {
-    api0.post.mockResolvedValue({ data: 'add data' });
-    const data = await addData(formData);
-    expect(data).toBe('add data');
-    expect(api0.post).toHaveBeenCalledWith('/add_data', formData);
+  it('calls add data api when input valid', async () => {
+    api0.post.mockResolvedValue({ data: {} });
+    await addData(formData);
+    expect(api0.post).toHaveBeenCalledWith('/records', formData);
+  });
+});
+
+
+describe('getModelStatus', () => {
+  it('calls model status api successfully', async () => {
+    api0.get.mockResolvedValue({ data: {} });
+    await getModelStatus();
+    expect(api0.get).toHaveBeenCalledWith('/model/status');
   });
 });

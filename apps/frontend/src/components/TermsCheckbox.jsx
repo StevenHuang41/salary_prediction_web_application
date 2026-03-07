@@ -7,12 +7,11 @@ const TermsCheckbox = ({
   labelText,
   btnText,
   invalidFeedbackText,
-  setPredictResult
 }) => {
   const [agree, setAgree] = useState(false);
 
   return (<>
-    <div className={`${className || ''}`}>
+    <div className={className}>
       <div className={`form-check`}>
         <input
           className="form-check-input"
@@ -56,7 +55,6 @@ const TermsCheckbox = ({
       id={modalId}
       handleModalSecondaryClick={() => {
         setAgree(false);
-        setPredictResult(false);
       }}
       handleModalPrimaryClick={() => (
         setAgree(true)

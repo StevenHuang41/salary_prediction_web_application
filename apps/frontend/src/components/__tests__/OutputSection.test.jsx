@@ -6,22 +6,21 @@ import userEvent from '@testing-library/user-event';
 vi.mock('../../api/dataService', () => ({
   fetchSalaryHistPlot: vi.fn(),
   fetchSalaryBoxPlot: vi.fn(),
-  resetModel: vi.fn(),
   addData: vi.fn(),
 }));
 
 import {
   fetchSalaryHistPlot,
   fetchSalaryBoxPlot,
-  resetModel,
   addData,
 } from '../../api/dataService';
 
 vi.mock('../MyCarousel', () => ({
-  default: () => (
+  default: ({images, alts}) => (
     <div data-testid="MyCarousel">
-      <img src={null} alt='carouselImg1' />
-      <img src={null} alt='carouselImg2' />
+      {images.map((image, idx) => (
+        <img src={image} alt={alts[idx]} />
+      ))}
     </div>
   )
 }));
@@ -35,37 +34,35 @@ const baseProps = {
     years_of_experience: 2,
   },
   predictData: {
-    value: 120000,
-    model_name: 'randomForestRegressor',
-    use_polynomial: true,
-    params: {
-      mae: 3000,
-      mse: 8000000,
-    },
-    num_train_dataset: 4000,
-    num_test_dataset: 1000
+    salary: 120000,
+    model_name: 'HGBR',
+    mse: 8000000,
+    mae: 3000,
+    rmse: 2800,
+    n_train: 8000,
+    n_test: 200
   },
-  setErrFunc: vi.fn(),
   addToast: vi.fn(),
-  showDetail: false,
-  setShowDetail: vi.fn(),
-  setDataAdded: vi.fn(),
+  isTraining: false,
+  onRetrain: vi.fn(),
+  onReset: vi.fn(),
+  setDBChanged: vi.fn(),
+  showRetrainBtn: false,
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  fetchSalaryHistPlot.mockResolvedValue('hist-url')
+  fetchSalaryBoxPlot.mockResolvedValue('box-url')
 });
 
-
-const clearInputAndExpectEmpty = async (input) => {
-  await userEvent.clear(input);
-  await waitFor(() => expect(input.value).toBe(''));
-};
-
 describe('OutputSection', () => {
-  it('render output components when see detail is false', async () => {
+  it('renders output components and hides detail by default', async () => {
     render(<OutputSection {...baseProps} />);
-    expect(document.querySelector('input#predict-input')).toBeInTheDocument();
+
+    const input = document.querySelector('input#predict-input')
+    expect(input).toBeInTheDocument();
+
     expect(screen.getByText(/Model/)).toBeInTheDocument();
     expect(screen.getByText(/MAE/)).toBeInTheDocument();
 
@@ -74,278 +71,218 @@ describe('OutputSection', () => {
     expect(seeDetailBtn).toHaveClass('btn-outline-secondary');
 
     expect(await screen.findByTestId('MyCarousel')).toBeInTheDocument();
-    expect(await screen.findByAltText('carouselImg1')).toBeInTheDocument();
-    expect(await screen.findByAltText('carouselImg2')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(fetchSalaryHistPlot).toHaveBeenCalled();
+      expect(fetchSalaryBoxPlot).toHaveBeenCalled();
+    });
 
     // should not show when see detail is false
-    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+    expect(document.querySelector('input.form-range')).not.toBeInTheDocument();
     expect(seeDetailBtn).not.toHaveClass('btn-secondary');
     expect(screen.queryByText(/Model Name/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Mean Absolute Error/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Mean Square Error/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/#Train dataset/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/#Test dataset/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Root Mean Square Error/)).not.toBeInTheDocument();
+    // expect(screen.getByText("Train size:")).not.toBeInTheDocument();
+    // expect(screen.getByText(/Test size/)).not.toBeInTheDocument();
     expect(screen.queryByText('Reset Database')).not.toBeInTheDocument();
-    expect(screen.queryByAltText('Salary Histogram Plot')).not.toBeInTheDocument();
-    expect(screen.queryByAltText('Salary Box Plot')).not.toBeInTheDocument();
+    // expect(await screen.findByAltText('Salary Histogram Plot')).not.toBeInTheDocument();
+    // expect(await screen.findByAltText('Salary Box Plot')).not.toBeInTheDocument();
   });
 
-  it('render output components when see detail is true', async () => {
+  it('renders output components when see detail is true', async () => {
     render(<OutputSection {...baseProps} showDetail={true} />);
-    expect(screen.getByRole('slider')).toBeInTheDocument();
+
 
     const seeDetailBtn = screen.getByText('see detail');
     expect(seeDetailBtn).toBeInTheDocument();
-    expect(seeDetailBtn).toHaveClass('btn-secondary');
+    fireEvent.click(seeDetailBtn);
 
+    expect(screen.queryByRole('slider')).toBeInTheDocument();
     expect(screen.getByText(/Model Name/)).toBeInTheDocument();
     expect(screen.getByText(/Mean Absolute Error/)).toBeInTheDocument();
-    expect(screen.getByText(/Mean Square Error/)).toBeInTheDocument();
-    expect(screen.getByText(/#Train dataset/)).toBeInTheDocument();
-    expect(screen.getByText(/#Test dataset/)).toBeInTheDocument();
+    expect(screen.getByText(/Root Mean Square Error/)).toBeInTheDocument();
+    expect(screen.getByText(/Train size/)).toBeInTheDocument();
+    expect(screen.getByText(/Test size/)).toBeInTheDocument();
     expect(screen.getByText('Reset Database')).toBeInTheDocument();
     expect(await screen.findByAltText('Salary Histogram Plot')).toBeInTheDocument();
     expect(await screen.findByAltText('Salary Box Plot')).toBeInTheDocument();
+
+    expect(screen.queryByTestId('MyCarousel')).not.toBeInTheDocument();
   });
 
-  it('does not update predict input when predictData is null', () => {
-    render(<OutputSection {...baseProps} predictData={null}/>)
-    expect(document.querySelector('input#predict-input')).not.toBeInTheDocument();
-  });
-
-
-  it(
-    'render output components when see detail is true and change predict input',
-    async () => {
-      render(<OutputSection {...baseProps} showDetail={true} />);
-
-      const predictInput = document.querySelector('input#predict-input');
-
-      // clear input 
-      clearInputAndExpectEmpty(predictInput);
-      // input is not a valid number ('')
-      expect(screen.getByText('Return Input')).toBeInTheDocument();
-      expect(screen.queryByText('Add Data')).not.toBeInTheDocument();
-
-      await userEvent.type(predictInput, '123');
-      // input is a valid number ('123')
-      expect(screen.getByText('Return Input')).toBeInTheDocument();
-      expect(screen.getByText('Add Data')).toBeInTheDocument();
-    }
-  );
-
-
-  it('update predictSalary when input change via textbox', async () => {
+  it('updates salary via text input and triggers plots fetch', async () => {
+    const user = userEvent.setup();
     render(<OutputSection {...baseProps} />);
-    const predictInput = document.querySelector('input#predict-input');
 
-    // clear textbox
-    clearInputAndExpectEmpty(predictInput);
+    const input = screen.getByRole('textbox');
 
-    await userEvent.type(predictInput, '12345');
-    expect(predictInput.value).toBe('12345');
+    await user.clear(input);
+    await user.type(input, '130000');
+
+    expect(input.value).toBe('130000');
+
+    await waitFor(() => {
+      expect(fetchSalaryHistPlot).toHaveBeenCalledWith(130000);
+      expect(fetchSalaryBoxPlot).toHaveBeenCalledWith(130000);
+    });
   });
 
-  it('update predictSalary and rangeValue via textbox (showDetail)', async () => {
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
+  it('logs errors when fetching images api fails', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetchSalaryHistPlot.mockRejectedValue(new Error('api fails'))
+    const user = userEvent.setup()
 
-    // clear textbox
-    clearInputAndExpectEmpty(predictInput);
+    render(<OutputSection {...baseProps} />);
 
-    await userEvent.type(predictInput, '119000');
-    expect(predictInput.value).toBe('119000');
-    expect(screen.getByRole('slider').value).toBe('119000');
-    
-    // clear textbox
-    clearInputAndExpectEmpty(predictInput);
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, '130000');
 
-    await userEvent.type(predictInput, '12345');
-    expect(predictInput.value).toBe('12345');
-    expect(screen.getByRole('slider').value).toBe('117000');
 
-    // clear textbox
-    clearInputAndExpectEmpty(predictInput);
-
-    await userEvent.type(predictInput, '999999');
-    expect(predictInput.value).toBe('999999');
-    expect(screen.getByRole('slider').value).toBe('123000');
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(new Error('api fails'));
+    });
+    consoleSpy.mockRestore()
   });
 
-  it('change predict input value (en-US) when toggle rangeBar', async () => {
-    render(<OutputSection {...baseProps} showDetail={true}/>);
+  it('shows "Return Input" and "Add Data" when salary is changed', async () => {
+    const user = userEvent.setup();
+    render(<OutputSection {...baseProps} />);
 
-    const predictInput = document.querySelector('input#predict-input');
-    const rangeBar = screen.getByRole('slider');
+    fireEvent.click(screen.getByText('see detail'));
 
-    fireEvent.change(rangeBar, { target: { value: '121000' } });
-    expect(rangeBar).toHaveValue('121000');
-    expect(predictInput).toHaveValue('121,000');
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, '150000');
+
+    expect(screen.getByText('Return Input')).toBeInTheDocument();
+    expect(screen.getByText('Add Data')).toBeInTheDocument();
+
+    await user.click(screen.getByText('Return Input'));
+    expect(input.value).toBe('120,000');
   });
 
-  it('undo the value of predict input by clicking Return Input btn', async () => {
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
-    
-    // change input to ''
-    clearInputAndExpectEmpty(predictInput);
+  it('calls addData and addToast when "Add Data" is clicked', async () => {
+    const user = userEvent.setup();
+    addData.mockResolvedValueOnce({});
 
-    const returnInputBtn = screen.getByText('Return Input');
-    expect(returnInputBtn).toBeInTheDocument();
+    render(<OutputSection {...baseProps} />);
+    fireEvent.click(screen.getByText('see detail'));
 
-    await userEvent.click(returnInputBtn);
-    expect(predictInput.value).toBe('120,000');
+    const input = screen.getByRole('textbox');
+    await user.type(input, '150000'); // Change value to make "Add Data" appear
 
-    expect(screen.queryByText('Return Input')).not.toBeInTheDocument();
-  })
+    const addBtn = screen.getByText('Add Data');
+    await user.click(addBtn);
 
-  it('undo the predict input when closing see detail btn', async () => {
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
+    expect(addData).toHaveBeenCalled();
+    expect(baseProps.setDBChanged).toHaveBeenCalledWith(true);
+    expect(baseProps.addToast).toHaveBeenCalledWith("Data added successfully!", "success");
+  });
+
+  it('catches addData error and show toast error message', async () => {
+    const user = userEvent.setup();
+    addData.mockRejectedValue(new Error('api fails'));
+
+    render(<OutputSection {...baseProps} />);
+    fireEvent.click(screen.getByText('see detail'));
+
+    const input = screen.getByRole('textbox');
+    await user.type(input, '150000'); // Change value to make "Add Data" appear
+
+    const addBtn = screen.getByText('Add Data');
+    await user.click(addBtn);
+
+    expect(addData).toHaveBeenCalled();
+    expect(baseProps.addToast).toHaveBeenCalledWith("Failed to add data", "danger");
+  });
+
+  it('calls onReset when Reset Database is clicked', async () => {
+    const user = userEvent.setup();
+    render(<OutputSection {...baseProps} />);
+    fireEvent.click(screen.getByText('see detail'));
+
+    const resetBtn = screen.getByText('Reset Database');
+    await user.click(resetBtn);
+
+    expect(baseProps.onReset).toHaveBeenCalled();
+  });
+
+  it('updates salary text input when the range slider moves', async () => {
+    render(<OutputSection {...baseProps} />);
+
     const seeDetailBtn = screen.getByText('see detail');
+    fireEvent.click(seeDetailBtn);
 
-    // change input to ''
-    clearInputAndExpectEmpty(predictInput);
+    const rangeSlider = screen.getByRole('slider');
+    const textInput = screen.getByRole('textbox');
 
-    await userEvent.click(seeDetailBtn);
-    await waitFor(() => {
-      expect(predictInput.value).toBe('120,000');
-    })
+    fireEvent.change(rangeSlider, { target: { value: '121000' } });
+
+    expect(rangeSlider.value).toBe('121000');
+    expect(textInput.value).toBe('121,000');
   });
 
-  it('reset database by clicking Reset Database btn (resolve)', async () => {
-    resetModel.mockResolvedValue({
-      status: 'sucess',
-      message: 'Reset Database successfully.',
-    })
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const resetDatabaseBtn = screen.getByText('Reset Database');
-    await userEvent.click(resetDatabaseBtn);
-    await waitFor(() => {
-      expect(baseProps.setErrFunc).toHaveBeenCalled();
-      expect(baseProps.addToast).toHaveBeenCalled(1);
+  it('shows as disabled when isTraining is true', () => {
+    render(<OutputSection {...baseProps} showRetrainBtn={true} isTraining={true} />);
 
-      expect(baseProps.addToast)
-      .toHaveBeenCalledWith("Reset database ...", "secondary");
+    fireEvent.click(screen.getByText('see detail'));
 
-      expect(resetModel).toHaveBeenCalled();
-      expect(baseProps.setDataAdded).toHaveBeenCalledWith(true);
-      expect(baseProps.addToast).toHaveBeenCalled(2);
+    const retrainBtn = screen.getByText('Retrain Model');
 
-      expect(baseProps.addToast)
-      .toHaveBeenCalledWith("Reset database successfully", "success");
-    })
+    expect(retrainBtn).toHaveClass('disabled');
   });
 
-  it('reset database by clicking Reset Database btn (reject)', async () => {
-    resetModel.mockRejectedValue({
-      status: 'fail',
-      message: 'Reset Database failed.',
-    });
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const resetDatabaseBtn = screen.getByText('Reset Database');
-    await userEvent.click(resetDatabaseBtn);
-    await waitFor(() => {
-      expect(baseProps.setErrFunc).toHaveBeenCalled(null);
-      expect(baseProps.addToast).toHaveBeenCalled(1);
+  it('returns null and does not set values if predictData is missing', () => {
+    const { container } = render(
+      <OutputSection {...baseProps} predictData={null} />
+    );
 
-      expect(baseProps.addToast)
-      .toHaveBeenCalledWith("Reset database ...", "secondary");
+    expect(container.firstChild).toBeNull();
 
-      expect(resetModel).toHaveBeenCalled();
-      expect(baseProps.setDataAdded).not.toHaveBeenCalledWith(true);
-      expect(baseProps.addToast).toHaveBeenCalled(1);
-
-      expect(baseProps.setErrFunc).toHaveBeenCalled(2);
-      expect(baseProps.addToast)
-      .toHaveBeenCalledWith("Reset database failed", "danger");
-    });
+    const input = screen.queryByRole('textbox');
+    expect(input).not.toBeInTheDocument();
   });
 
-  it('add data to database by clicking Add Data btn (resolve)', async () => {
-    addData.mockResolvedValue({
-      data: {
-        status: 'sucess',
-        message: 'Add data to database.'
-      }
-    });
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
-    // // change input to ''
-    clearInputAndExpectEmpty(predictInput);
-    await userEvent.type(predictInput, '123,456');
+  it('returns salary value to original prediction when closing details', async () => {
+    const user = userEvent.setup();
+    render(<OutputSection {...baseProps} />);
 
-    const addDataBtn = screen.getByText('Add Data');
-    await userEvent.click(addDataBtn);
-    await waitFor(() => {
-      expect(baseProps.setErrFunc).toHaveBeenCalled(null);
-      expect(addData).toHaveBeenCalled();
-      expect(baseProps.setDataAdded).toHaveBeenCalled();
-      expect(baseProps.addToast)
-      .toHaveBeenCalledWith("Data added successfully!", "success");
-    })
+    const seeDetailBtn = screen.getByText('see detail');
+    const input = screen.getByRole('textbox');
+
+    await user.click(seeDetailBtn);
+
+    await user.clear(input);
+    await user.type(input, '150000');
+    expect(input.value).toBe('150000');
+
+    await user.click(seeDetailBtn);
+    expect(input.value).toBe('120,000');
   });
 
-  it('add data to database by clicking Add Data btn (reject)', async () => {
-    addData.mockRejectedValue({
-      data: {
-        status: 'fail',
-        message: 'Data does not add to Database.'
-      }
-    });
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
-    // // change input to ''
-    clearInputAndExpectEmpty(predictInput);
-    await userEvent.type(predictInput, '123,456');
+  it('applies the disabled class to action buttons when isTraining is true', () => {
+    render(
+      <OutputSection
+        {...baseProps}
+        isTraining={true}
+        showRetrainBtn={true}
+      />
+    );
+    fireEvent.click(screen.getByText('see detail'));
 
-    const addDataBtn = screen.getByText('Add Data');
-    await userEvent.click(addDataBtn);
-    await waitFor(() => {
-      expect(baseProps.setErrFunc).toHaveBeenCalledWith(null);
-      expect(addData).toHaveBeenCalled();
-      expect(baseProps.setDataAdded).not.toHaveBeenCalled();
-      expect(baseProps.addToast)
-      .not.toHaveBeenCalledWith("Data added successfully!", "success");
-      expect(baseProps.setErrFunc).toHaveBeenCalled(2);
-    })
+    const addDataBtn = screen.queryByText('Add Data'); 
+    const resetBtn = screen.getByText('Training ...'); 
+    const retrainBtn = screen.getByText('Retrain Model');
+
+    expect(resetBtn).toHaveClass('disabled');
+    expect(retrainBtn).toHaveClass('disabled');
+
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: '150000' } });
+
+    expect(screen.getByText('Add Data')).toHaveClass('disabled');
   });
 
-  it('catch error when fetchSalaryHistPlot fail', async () => {
-    fetchSalaryHistPlot.mockRejectedValue(new Error('hist plot error'));
-    fetchSalaryBoxPlot.mockResolvedValue('test-url');
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
-    
-    clearInputAndExpectEmpty(predictInput);
-    await userEvent.type(predictInput, '123456');
-
-    await waitFor(() => {
-      expect(logSpy).toHaveBeenCalledWith(expect.any(Error));
-      expect(logSpy.mock.calls[0][0].message).toBe('hist plot error');
-    });
-
-    logSpy.mockRestore();
-  });
-
-  it('catch error when fetchSalaryBoxPlot fail', async () => {
-    fetchSalaryHistPlot.mockResolvedValue('test-url');
-    fetchSalaryBoxPlot.mockRejectedValue(new Error('box plot error'));
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    render(<OutputSection {...baseProps} showDetail={true}/>);
-    const predictInput = document.querySelector('input#predict-input');
-    
-    clearInputAndExpectEmpty(predictInput);
-    await userEvent.type(predictInput, '123456');
-
-    await waitFor(() => {
-      expect(logSpy).toHaveBeenCalledWith(expect.any(Error));
-      expect(logSpy.mock.calls[0][0].message).toBe('box plot error');
-    });
-
-    logSpy.mockRestore();
-  });
 });

@@ -6,16 +6,9 @@ beforeEach(() => {
 
 describe('axiosInstance', () => {
   it('create api0 with correct baseURL', async () => {
-    import.meta.env.VITE_IP_ADDRESS = 'http://localhost0';
+    import.meta.env.VITE_API_BASE_URL = 'http://localhost0:8000';
 
     const { api0 } = await import("../axiosInstance");
-    expect(api0.defaults.baseURL).toBe('http://localhost0:8000/api');
-  });
-
-  it('create api1 with correct baseURL', async () => {
-    import.meta.env.VITE_IP_ADDRESS = 'http://localhost1';
-
-    const { api1 } = await import("../axiosInstance");
-    expect(api1.defaults.baseURL).toBe('http://localhost1:8001/api');
+    expect(api0.defaults.baseURL).toBe('http://localhost0:8000/api/v1');
   });
 });

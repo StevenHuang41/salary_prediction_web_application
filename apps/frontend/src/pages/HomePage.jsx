@@ -10,7 +10,7 @@ import InputForm from '../components/InputForm';
 import OutputSection from '../components/OutputSection';
 import ErrorPredict from '../components/ErrorPredict';
 import LoadingResult from '../components/LoadingResult';
-import useToast from '../hooks/useToast'
+import useToast from '../hooks/useToast';
 import MyToast from '../components/Toast';
 
 const HomePage = () => {
@@ -193,6 +193,5 @@ const HomePage = () => {
     </div>
   </>)
 };
-
 
 export default HomePage;

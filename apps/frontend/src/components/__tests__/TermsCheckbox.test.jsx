@@ -1,9 +1,5 @@
-import {
-  render,
-  screen,
-  fireEvent,
-} from '@testing-library/react';
-import { vi, describe, expect, it, beforeEach } from 'vitest';
+import { render, screen, fireEvent, } from '@testing-library/react';
+import { vi, describe, expect, it } from 'vitest';
 import TermsCheckbox from '../TermsCheckbox';
 
 vi.mock('../TermsModal', () => ({
@@ -27,77 +23,97 @@ describe('TermsCheckbox', () => {
     labelText: 'label-text',
     btnText: 'button-text',
     invalidFeedbackText: 'Invalid feedback',
-    setPredictResult: vi.fn(),
   };
 
-  beforeEach(() => {
-    baseProps.setPredictResult.mockClear();
-  });
-
-  it('render checkbox, text, modal button and feedback', () => {
+  it('renders checkbox, text, modal button and feedback', () => {
     render(<TermsCheckbox {...baseProps} />);
-    expect(document.querySelector('input#invalidCheck')).toBeInTheDocument();
-    expect(screen.getByText(baseProps.labelText)).toBeInTheDocument();
-    expect(screen.getByText(baseProps.btnText)).toBeInTheDocument();
-    expect(screen.getByText(baseProps.invalidFeedbackText)).toBeInTheDocument();
-  });
 
-  it('checkbox clickable', () => {
-    render(<TermsCheckbox {...baseProps} />);
-    const checkbox = document.querySelector('input#invalidCheck');
-    expect(checkbox).not.toBeChecked();
-    fireEvent.click(checkbox);
-    expect(checkbox).toBeChecked();
-    fireEvent.click(checkbox);
-    expect(checkbox).not.toBeChecked();
-  });
+    const checkbox = document.querySelector('input#invalidCheck')
+    const checkboxText = screen.getByText(baseProps.labelText)
+    const checkboxTBtn = screen.getByText(baseProps.btnText)
+    const checkboxInvalidText = screen.getByText(baseProps.invalidFeedbackText)
 
-  it('modal button has correct id target that matches to modal', () => {
-    render(<TermsCheckbox {...baseProps} />);
     const modalBtn = document.querySelector('button.btn-link');
     const modal = screen.getByTestId('TermsModal');
-    expect(modalBtn).toHaveAttribute('data-bs-toggle', 'modal');
-    expect(modalBtn).toHaveAttribute('data-bs-target', `#${baseProps.modalId}`);
-    expect(modal).toHaveAttribute('id', baseProps.modalId);
+
+    expect(checkbox).toBeInTheDocument();
+    expect(checkboxText).toBeInTheDocument();
+    expect(checkboxTBtn).toBeInTheDocument();
+    expect(checkboxInvalidText).toBeInTheDocument();
+
+    expect(modalBtn).toBeInTheDocument();
+    expect(modal).toBeInTheDocument();
+
+    expect(modalBtn).toHaveAttribute("data-bs-toggle", "modal");
+    expect(modalBtn).toHaveAttribute("data-bs-target", "#modal-id");
+    expect(modal).toHaveAttribute("id", baseProps.modalId)
   });
 
-  it('clicking agree in modal will check the checkbox, and vice versa', () => {
+  it('toggles checkbox correctly', () => {
     render(<TermsCheckbox {...baseProps} />);
-    const agreeBtn = screen.getByText('Agree');
-    const disagreeBtn = screen.getByText('Disagree');
-    const checkbox = document.querySelector('input.form-check-input');
+
+    const checkbox = document.querySelector('input#invalidCheck')
+    const checkboxText = screen.getByText(baseProps.labelText)
+    const checkboxTBtn = screen.getByText(baseProps.btnText)
+
     expect(checkbox).not.toBeChecked();
 
-    fireEvent.click(agreeBtn);
+    fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
 
-    fireEvent.click(disagreeBtn);
+    fireEvent.click(checkbox);
     expect(checkbox).not.toBeChecked();
-    expect(baseProps.setPredictResult).toHaveBeenCalledWith(false);
+
+    fireEvent.click(checkboxText);
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(checkboxText);
+    expect(checkbox).not.toBeChecked();
+
+    fireEvent.click(checkboxTBtn);
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('sets checkbox to checkend when modal "Agree" is clicked', () => {
+    render(<TermsCheckbox {...baseProps} />);
+
+    const checkbox = document.querySelector('input#invalidCheck')
+
+    fireEvent.click(screen.getByText("Agree"))
+    expect(checkbox).toBeChecked()
+
+    fireEvent.click(screen.getByText("Disagree"))
+    expect(checkbox).not.toBeChecked()
   });
 
   it('label is associated with checkbox', () => {
     render(<TermsCheckbox {...baseProps} />);
+
     const checkbox = document.querySelector('input#invalidCheck');
     const label = document.querySelector('label.form-check-label');
+
     expect(checkbox).toHaveAttribute('id', 'invalidCheck');
     expect(label).toHaveAttribute('for', 'invalidCheck');
   });
-
+    
   it('correct className on container', () => {
     render(<TermsCheckbox {...baseProps} />);
+    
     const wrapper = document.querySelector('div');
     const container = wrapper.firstChild;
+    
     expect(container).toHaveClass(baseProps.className);
   });
-
+  //
   it('correct null className on container', () => {
     render(<TermsCheckbox {...baseProps} className="" />);
+    
     const wrapper1 = document.querySelector('div');
     const container1 = wrapper1.firstChild;
+    
     expect(container1.className).toBe('');
   });
-
+    
   it('click on modal button preventDefault', () => {
     render(<TermsCheckbox {...baseProps} />);
     const modalBtn = document.querySelector('button.btn-link');
@@ -106,7 +122,7 @@ describe('TermsCheckbox', () => {
     fireEvent.click(modalBtn);
 
     expect(mockEvent).toHaveBeenCalled();
-    
+
     mockEvent.mockRestore();
   });
 });
