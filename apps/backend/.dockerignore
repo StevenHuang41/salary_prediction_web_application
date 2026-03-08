@@ -1,6 +1,22 @@
+# python
 .venv
 __pycache__
 *.pyc
+*.pyo
+*.pyd
 
-artifacts/*
-!artifacts/
+# git
+.gitignore
+
+# notebooks
+*.ipynb
+
+# OS
+.DS_Store
+
+# tests
+tests/
+.pytest*
+
+# node
+node_modules

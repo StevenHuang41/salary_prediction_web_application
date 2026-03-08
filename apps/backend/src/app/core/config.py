@@ -11,8 +11,11 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    backend_dir: Path | None = Path(__file__).resolve().parents[3]
-    data_dir: Path = Path("./data")
+    backend_dir: Path = Path(__file__).resolve().parents[3]
+
+    @property
+    def data_dir(self) -> Path:
+        return self.backend_dir / "data"
 
     @property
     def raw_data_dir(self) -> Path:

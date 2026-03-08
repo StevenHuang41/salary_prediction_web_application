@@ -2,6 +2,9 @@ FROM python:3.12-slim
 
 WORKDIR /backend
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libgomp1 curl && \
@@ -11,7 +14,7 @@ RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --locked
+RUN uv sync --locked --no-dev
 
 ENV PATH="/backend/.venv/bin:$PATH"
 ENV PYTHONPATH=/backend/src
