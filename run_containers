@@ -43,7 +43,7 @@ docker run -d \
   --name $BACKEND_CONTAINER \
   --network $NETWORK \
   -e DATABASE_URL=postgresql+psycopg://postgres:postgres@salary_db:5432/salarydb \
-  -p 8000:8000 \
+  -p 8080:8080 \
   $BACKEND_IMAGE
 
 echo "Starting frontend container..."
@@ -60,5 +60,5 @@ echo ""
 echo "System started successfully"
 echo ""
 echo "Frontend: http://localhost:3000"
-echo "Backend:  http://localhost:8000/docs"
+echo "Backend:  http://localhost:8080/docs"
 echo "Postgres: localhost:5432"
