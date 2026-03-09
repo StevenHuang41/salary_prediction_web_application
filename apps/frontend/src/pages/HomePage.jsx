@@ -83,9 +83,9 @@ const HomePage = () => {
     try {
       setIsTraining(true);
       setTrainingType("retrain")
+      addToast("Model retraining ...", "info");
       await retrainModel();
       setDBChanged(false);
-      addToast("Model retraining ...", "info");
     } catch (err) {
       setIsTraining(false);
       setTrainingType(null)
@@ -97,9 +97,9 @@ const HomePage = () => {
     try {
       setIsTraining(true);
       setTrainingType("reset")
+      addToast("Model resetting ...", "info");
       await resetModel();
       setDBChanged(true);
-      addToast("Model resetting ...", "info");
     } catch (err) {
       setIsTraining(false);
       setTrainingType(null)

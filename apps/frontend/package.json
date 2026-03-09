@@ -16,7 +16,7 @@
   },
   "scripts": {
     "dev": "vite --host=0.0.0.0 --port=3000",
-    "build": "vite build",
+    "build": "vite build --mode frontend",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest --coverage",
