@@ -83,4 +83,12 @@ jobs:
           gcloud run deploy salary-backend \
             --image  asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/salary-backend/backend:${{ github.sha }} \
             --region asia-east1 \
+            --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --cpu 8 \
+            --memory 16Gi \
+            --concurrency 4 \
+            --min-instances 0 \
+            --max-instances 1 \
+            --cpu-boost \
             --allow-unauthenticated
