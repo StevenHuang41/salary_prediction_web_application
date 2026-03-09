@@ -23,4 +23,6 @@ COPY . .
 
 EXPOSE 8080
 
+RUN mkdir -p /backend/artifacts
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

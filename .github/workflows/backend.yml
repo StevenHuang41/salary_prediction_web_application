@@ -88,7 +88,7 @@ jobs:
             --cpu 8 \
             --memory 16Gi \
             --concurrency 4 \
-            --min-instances 0 \
+            --min-instances 1 \
             --max-instances 1 \
             --cpu-boost \
             --allow-unauthenticated
