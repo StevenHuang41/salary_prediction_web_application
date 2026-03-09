@@ -16,6 +16,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: apps/backend
+
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
