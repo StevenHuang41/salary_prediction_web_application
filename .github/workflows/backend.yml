@@ -86,10 +86,15 @@ jobs:
             --set-env-vars USE_CLOUD=true \
             --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
             --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --cpu 8 \
-            --memory 16Gi \
+            --cpu 1 \
+            --memory 512Mi \
             --concurrency 4 \
-            --min-instances 1 \
-            --max-instances 1 \
-            --cpu-boost \
+            --min-instances 0 \
+            --max-instances 2 \
             --allow-unauthenticated
+
+      - name: Update Cloud Run Job
+        run: |
+          gcloud run jobs update salary-prediction-trainer \
+          --image asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/salary-backend/backend:${{ github.sha }} \
+          --region asia-east1

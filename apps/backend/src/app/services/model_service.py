@@ -1,4 +1,5 @@
 import json
+from google.cloud.storage import bucket
 import joblib
 from sqlalchemy.orm import Session
 from google.cloud import storage
@@ -38,8 +39,22 @@ class ModelService:
         bucket.blob("model.joblib").upload_from_filename(settings.model_file)
         bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
 
+    def set_training_status(self, status: str):
+        self._is_training = True if status == "training" else False
+
+        if not settings.use_cloud:
+            return
+
+        client = storage.Client()
+        bucket = client.bucket(settings.model_bucket)
+
+        bucket.blob("status.json").upload_from_string(
+            json.dumps({"status": status}),
+            content_type="application/json"
+        )
+
     def train(self, db: Session):
-        self._is_training = True
+        self.set_training_status("training")
 
         df = self.repo.get_dataframe(db)
 
@@ -50,7 +65,7 @@ class ModelService:
 
         self.load(db)
 
-        self._is_training = False
+        self.set_training_status("ready")
 
     def check(self, db):
         if self.model is None or self.metadata == {}:
@@ -67,7 +82,22 @@ class ModelService:
         return self.metadata
 
     def get_status(self) -> bool:
-        return self._is_training
+        if not settings.use_cloud:
+            return self._is_training
+
+        client = storage.Client()
+        bucket = client.bucket(settings.model_bucket)
+
+        blob = bucket.blob("status.json")
+
+        if not blob.exists():
+            print("Warning: status.json does not exist !!!")
+            return True
+
+        status_f = json.loads(blob.download_as_string())
+        return status_f["status"] == "training"
+
+
 
 
 model_service = ModelService()
