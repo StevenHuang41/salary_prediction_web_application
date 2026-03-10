@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - s2
     paths:
       - "apps/backend/**"
       - ".github/workflows/backend.yml"
