@@ -1,6 +1,7 @@
 import json
 import joblib
 from sqlalchemy.orm import Session
+from google.cloud import storage
 
 from app.core.config import settings
 from app.ml.train import Trainer
@@ -24,6 +25,19 @@ class ModelService:
         with open(settings.metadata_file, "r") as f:
             self.metadata = json.load(f)
 
+    def upload_artifacts(self):
+        if not settings.use_cloud:
+            return
+
+        if settings.model_bucket is None:
+            raise ValueError("MODEL_BUCKET is not set in .env")
+
+        client = storage.Client()
+        bucket = client.bucket(settings.model_bucket)
+
+        bucket.blob("model.joblib").upload_from_filename(settings.model_file)
+        bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
+
     def train(self, db: Session):
         self._is_training = True
 
@@ -31,6 +45,9 @@ class ModelService:
 
         trainer = Trainer(df)
         trainer.run()
+
+        self.upload_artifacts()
+
         self.load(db)
 
         self._is_training = False
@@ -54,3 +71,15 @@ class ModelService:
 
 
 model_service = ModelService()
+
+if __name__ == "__main__":
+    from app.db.session import SessionLocal
+
+    db = SessionLocal()
+    try :
+        model_service.train(db)
+    finally:
+        db.close()
+
+
+

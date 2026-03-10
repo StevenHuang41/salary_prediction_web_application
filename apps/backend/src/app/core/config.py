@@ -13,6 +13,9 @@ class Settings(BaseSettings):
 
     backend_dir: Path = Path(__file__).resolve().parents[3]
 
+    use_cloud: bool = False
+    model_bucket: str | None = None
+
     @property
     def data_dir(self) -> Path:
         return self.backend_dir / "data"
