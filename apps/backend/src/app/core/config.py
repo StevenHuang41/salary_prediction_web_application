@@ -15,6 +15,9 @@ class Settings(BaseSettings):
 
     use_cloud: bool = False
     model_bucket: str | None = None
+    gcp_project: str | None = None
+    training_job_name:str | None = None
+
 
     @property
     def data_dir(self) -> Path:

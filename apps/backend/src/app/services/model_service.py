@@ -1,8 +1,12 @@
 import json
+import subprocess
 from google.cloud.storage import bucket
 import joblib
 from sqlalchemy.orm import Session
 from google.cloud import storage
+import requests
+import google.auth as gauth
+import google.auth.transport.requests as gar
 
 from app.core.config import settings
 from app.ml.train import Trainer
@@ -56,16 +60,38 @@ class ModelService:
     def train(self, db: Session):
         self.set_training_status("training")
 
-        df = self.repo.get_dataframe(db)
+        if not settings.use_cloud:
+            df = self.repo.get_dataframe(db)
+            trainer = Trainer(df)
+            trainer.run()
 
-        trainer = Trainer(df)
-        trainer.run()
+            self.upload_artifacts()
+            self.load(db)
 
-        self.upload_artifacts()
+            self.set_training_status("ready")
 
-        self.load(db)
+        else :
+            url = (
+                f"https://run.googleapis.com/v2/projects/"
+                f"{settings.gcp_project}/locations/asia-east1/jobs/"
+                f"{settings.training_job_name}:run"
+            )
 
-        self.set_training_status("ready")
+            credentials, _ = gauth.default()
+
+            auth_req = gar.Request()
+            credentials.refresh(auth_req)
+
+            headers = {
+                "Authorization": f"Bearer {credentials.token}",
+                "Content-Type": "application/json",
+            }
+
+            response = requests.post(url, headers=headers)
+
+            if response.status_code not in (200, 201):
+                raise RuntimeError(response.text)
+
 
     def check(self, db):
         if self.model is None or self.metadata == {}:
