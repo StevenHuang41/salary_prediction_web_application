@@ -16,6 +16,7 @@ export default defineConfig({
     coverage: {
       exclude: [
         'build/**',
+        'dist/**',
         'node_modules/**',
         'src/index.js',
         'src/main.jsx',
