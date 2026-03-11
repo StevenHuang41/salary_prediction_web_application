@@ -6,6 +6,7 @@ import requests
 import google.auth as gauth
 import google.auth.transport.requests as gar
 
+from app.db.session import SessionLocal
 from app.core.config import settings
 from app.ml.train import Trainer
 from app.repositories.salary_repository import SalaryRepository
@@ -60,23 +61,28 @@ class ModelService:
             self.metadata = json.load(f)
 
 
-    def _check(self):
+    def _check(self, db: Session):
         if self.model is None or self.metadata is None:
-            self.load()
+            try :
+                self.load()
+            except FileNotFoundError:
+                self.train(db)
+                self.load()
+
 
     def _clear_old_model(self):
         self.model = None
         self.metadata = None
 
 
-    def get_metadata(self) -> dict:
-        self._check()
+    def get_metadata(self, db: Session) -> dict:
+        self._check(db)
 
         return self.metadata # type: ignore
 
 
-    def predict(self, df):
-        self._check()
+    def predict(self, db: Session, df):
+        self._check(db)
 
         return self.model.predict(df) # type: ignore
 
@@ -97,6 +103,7 @@ class ModelService:
 
 
     def _run_training_job(self, db: Session):
+
         df = self.repo.get_dataframe(db)
 
         trainer = Trainer(df)
