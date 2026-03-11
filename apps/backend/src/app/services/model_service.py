@@ -21,14 +21,29 @@ class ModelService:
         self._is_training = False
 
     def load(self, db: Session):
+        if settings.use_cloud:
+            client = storage.Client()
+            bucket = client.bucket(settings.model_bucket)
+
+            model_blob = bucket.blob("model.joblib")
+            metadata_blob = bucket.blob("metadata.json")
+
+            if not model_blob.exists() or not metadata_blob.exists():
+                raise FileNotFoundError("Model artifacts not found in cloud storage")
+
+            model_blob.download_to_filename(settings.model_file)
+            metadata_blob.download_to_filename(settings.metadata_file)
+
         if not settings.model_file.exists() or not settings.metadata_file.exists():
             print("Model files missing, start training ...")
             self.train(db)
+            self.load(db)
 
         self.model = joblib.load(settings.model_file)
 
         with open(settings.metadata_file, "r") as f:
             self.metadata = json.load(f)
+
 
     def upload_artifacts(self):
         if not settings.use_cloud:
@@ -58,19 +73,19 @@ class ModelService:
         )
 
     def train(self, db: Session):
-        self.set_training_status("training")
 
-        if not settings.use_cloud:
+        if settings.i_am == "jobrun":
             df = self.repo.get_dataframe(db)
             trainer = Trainer(df)
             trainer.run()
 
             self.upload_artifacts()
-            self.load(db)
 
             self.set_training_status("ready")
 
         else :
+            self.set_training_status("training")
+
             url = (
                 f"https://run.googleapis.com/v2/projects/"
                 f"{settings.gcp_project}/locations/asia-east1/jobs/"
@@ -96,6 +111,7 @@ class ModelService:
     def check(self, db):
         if self.model is None or self.metadata == {}:
             self.train(db)
+            self.load(db)
 
     def predict(self, db: Session, df):
         self.check(db)
@@ -107,7 +123,7 @@ class ModelService:
 
         return self.metadata
 
-    def get_status(self) -> bool:
+    def model_is_training(self) -> bool:
         if not settings.use_cloud:
             return self._is_training
 
@@ -134,6 +150,7 @@ if __name__ == "__main__":
     db = SessionLocal()
     try :
         model_service.train(db)
+        model_service.load(db)
     finally:
         db.close()
 

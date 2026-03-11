@@ -13,11 +13,12 @@ async def model_retrain(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    if model_service.get_status():
+    if model_service.model_is_training():
         return {
             "status": "already_training"
         }
     background_tasks.add_task(model_service.train, db)
+    background_tasks.add_task(model_service.load, db)
     return {
         "status": "training_started"
     }
@@ -33,6 +34,6 @@ async def model_reset(db: Session = Depends(get_db)):
 @router.get("/model/status")
 async def model_status():
     return {
-        "is_training": model_service.get_status()
+        "is_training": model_service.model_is_training()
     }
 
