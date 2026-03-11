@@ -1,6 +1,4 @@
 import json
-import subprocess
-from google.cloud.storage import bucket
 import joblib
 from sqlalchemy.orm import Session
 from google.cloud import storage
@@ -17,7 +15,7 @@ class ModelService:
     def __init__(self):
         self.repo = SalaryRepository()
         self.model = None
-        self.metadata = {}
+        self.metadata = None
         self._is_training = False
 
 
@@ -62,19 +60,23 @@ class ModelService:
             self.metadata = json.load(f)
 
 
-    def _check(self, db):
-        if self.model is None or self.metadata == {}:
+    def _check(self):
+        if self.model is None or self.metadata is None:
             self.load()
 
-
-    def get_metadata(self, db: Session) -> dict:
-        self._check(db)
-
-        return self.metadata
+    def _clear_old_model(self):
+        self.model = None
+        self.metadata = None
 
 
-    def predict(self, db: Session, df):
-        self._check(db)
+    def get_metadata(self) -> dict:
+        self._check()
+
+        return self.metadata # type: ignore
+
+
+    def predict(self, df):
+        self._check()
 
         return self.model.predict(df) # type: ignore
 
@@ -129,7 +131,9 @@ class ModelService:
             raise RuntimeError(response.text)
 
     def train(self, db: Session):
+
         if settings.i_am == "jobrun":
+            self._clear_old_model()
             self._run_training_job(db)
 
         else :
@@ -147,7 +151,7 @@ class ModelService:
 
         if not blob.exists():
             print("Warning: status.json does not exist !!!")
-            return True
+            return False
 
         status_f = json.loads(blob.download_as_string())
         return status_f["status"] == "training"
