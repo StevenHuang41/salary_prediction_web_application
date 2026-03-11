@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
         if repo.count(db) == 0:
             data_service.seed(db)
 
-        model_service.load(db)
+        model_service.load()
         data_service.load(db)
 
         db.close()
@@ -40,7 +40,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=[
             *(settings.frontend_origins_list or []),
-            "https://storage.googleapis.com",
+            "https://storage.googleapis.com"
         ],
         allow_credentials=True,
         allow_methods=["*"],

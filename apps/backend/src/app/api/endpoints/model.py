@@ -18,7 +18,6 @@ async def model_retrain(
             "status": "already_training"
         }
     background_tasks.add_task(model_service.train, db)
-    background_tasks.add_task(model_service.load, db)
     return {
         "status": "training_started"
     }

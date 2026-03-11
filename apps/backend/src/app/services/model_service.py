@@ -20,32 +20,22 @@ class ModelService:
         self.metadata = {}
         self._is_training = False
 
-    def load(self, db: Session):
-        if settings.use_cloud:
-            client = storage.Client()
-            bucket = client.bucket(settings.model_bucket)
 
-            model_blob = bucket.blob("model.joblib")
-            metadata_blob = bucket.blob("metadata.json")
+    def _download_cloud_artifacts(self):
+        client = storage.Client()
+        bucket = client.bucket(settings.model_bucket)
 
-            if not model_blob.exists() or not metadata_blob.exists():
-                raise FileNotFoundError("Model artifacts not found in cloud storage")
+        model_blob = bucket.blob("model.joblib")
+        metadata_blob = bucket.blob("metadata.json")
 
-            model_blob.download_to_filename(settings.model_file)
-            metadata_blob.download_to_filename(settings.metadata_file)
+        if not model_blob.exists() or not metadata_blob.exists():
+            raise FileNotFoundError("Model artifacts not found in cloud storage")
 
-        if not settings.model_file.exists() or not settings.metadata_file.exists():
-            print("Model files missing, start training ...")
-            self.train(db)
-            self.load(db)
-
-        self.model = joblib.load(settings.model_file)
-
-        with open(settings.metadata_file, "r") as f:
-            self.metadata = json.load(f)
+        model_blob.download_to_filename(settings.model_file)
+        metadata_blob.download_to_filename(settings.metadata_file)
 
 
-    def upload_artifacts(self):
+    def _upload_cloud_artifacts(self):
         if not settings.use_cloud:
             return
 
@@ -58,7 +48,38 @@ class ModelService:
         bucket.blob("model.joblib").upload_from_filename(settings.model_file)
         bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
 
-    def set_training_status(self, status: str):
+
+    def load(self):
+        if settings.use_cloud:
+            self._download_cloud_artifacts()
+
+        if not settings.model_file.exists() or not settings.metadata_file.exists():
+            raise FileNotFoundError("Model files does not exists in artifacts/")
+
+        self.model = joblib.load(settings.model_file)
+
+        with open(settings.metadata_file, "r") as f:
+            self.metadata = json.load(f)
+
+
+    def _check(self, db):
+        if self.model is None or self.metadata == {}:
+            self.load()
+
+
+    def get_metadata(self, db: Session) -> dict:
+        self._check(db)
+
+        return self.metadata
+
+
+    def predict(self, db: Session, df):
+        self._check(db)
+
+        return self.model.predict(df) # type: ignore
+
+
+    def _set_training_status(self, status: str):
         self._is_training = True if status == "training" else False
 
         if not settings.use_cloud:
@@ -72,56 +93,48 @@ class ModelService:
             content_type="application/json"
         )
 
-    def train(self, db: Session):
 
-        if settings.i_am == "jobrun":
-            df = self.repo.get_dataframe(db)
-            trainer = Trainer(df)
-            trainer.run()
+    def _run_training_job(self, db: Session):
+        df = self.repo.get_dataframe(db)
 
-            self.upload_artifacts()
+        trainer = Trainer(df)
+        trainer.run()
 
-            self.set_training_status("ready")
+        self._upload_cloud_artifacts()
 
-        else :
-            self.set_training_status("training")
+        self._set_training_status("ready")
 
-            url = (
-                f"https://run.googleapis.com/v2/projects/"
+
+    def _call_training_api(self):
+        self._set_training_status("training")
+
+        url = (
+            f"https://run.googleapis.com/v2/projects/"
                 f"{settings.gcp_project}/locations/asia-east1/jobs/"
                 f"{settings.training_job_name}:run"
-            )
+        )
 
-            credentials, _ = gauth.default()
+        credentials, _ = gauth.default()
+        auth_req = gar.Request()
+        credentials.refresh(auth_req)
 
-            auth_req = gar.Request()
-            credentials.refresh(auth_req)
+        headers = {
+            "Authorization": f"Bearer {credentials.token}",
+            "Content-Type": "application/json",
+        }
 
-            headers = {
-                "Authorization": f"Bearer {credentials.token}",
-                "Content-Type": "application/json",
-            }
+        response = requests.post(url, headers=headers)
 
-            response = requests.post(url, headers=headers)
+        if response.status_code not in (200, 201):
+            raise RuntimeError(response.text)
 
-            if response.status_code not in (200, 201):
-                raise RuntimeError(response.text)
+    def train(self, db: Session):
+        if settings.i_am == "jobrun":
+            self._run_training_job(db)
 
+        else :
+            self._call_training_api()
 
-    def check(self, db):
-        if self.model is None or self.metadata == {}:
-            self.train(db)
-            self.load(db)
-
-    def predict(self, db: Session, df):
-        self.check(db)
-
-        return self.model.predict(df) # type: ignore
-
-    def get_metadata(self, db: Session) -> dict:
-        self.check(db)
-
-        return self.metadata
 
     def model_is_training(self) -> bool:
         if not settings.use_cloud:
@@ -150,7 +163,6 @@ if __name__ == "__main__":
     db = SessionLocal()
     try :
         model_service.train(db)
-        model_service.load(db)
     finally:
         db.close()
 
