@@ -28,4 +28,6 @@ async def predict(
         rmse=float(metadata["rmse"]),
         n_train=int(metadata["n_train"]),
         n_test=int(metadata["n_test"]),
+        created_at=str(metadata["created_at"]),
+        duration=str(metadata["duration"]),
     )

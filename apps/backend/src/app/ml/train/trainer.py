@@ -1,6 +1,7 @@
 import json
 import joblib
 import pandas as pd
+from datetime import datetime, timezone
 from sklearn.metrics import (
     mean_absolute_error,
     root_mean_squared_error,
@@ -76,7 +77,7 @@ class Trainer:
         self.rmse = root_mean_squared_error(y_test, y_pred)
 
 
-    def save(self):
+    def save(self, duration: str = "No data"):
         joblib.dump(self.model, settings.model_file)
 
         metadata = {
@@ -85,14 +86,17 @@ class Trainer:
             "mse": self.mse,
             "mae": self.mae,
             "rmse": self.rmse,
-            "n_train": self.n_train,  # type: ignore
-            "n_test": self.n_test,  # type: ignore
-            "data_size": len(self.df)
-
+            "n_train": self.n_train,    # type: ignore
+            "n_test": self.n_test,      # type: ignore
+            "data_size": len(self.df),  # type: ignore
+            "created_at": datetime.now(timezone.utc).strftime("%d/%B/%Y %a %I:%M %p"),
+            "duration": duration,
         }
         with open(settings.metadata_file, "w") as f:
             json.dump(metadata, f, indent=4, default=str)
 
     def run(self):
+        start = datetime.now(timezone.utc)
         self.train()
-        self.save()
+        duration = f"{(datetime.now(timezone.utc) - start).total_seconds():.2f} s"
+        self.save(duration)

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { vi, describe, expect, it, beforeEach } from 'vitest';
 import OutputSection from '../OutputSection';
 import userEvent from '@testing-library/user-event';
@@ -104,6 +104,11 @@ describe('OutputSection', () => {
     expect(screen.getByText(/Root Mean Square Error/)).toBeInTheDocument();
     expect(screen.getByText(/Train size/)).toBeInTheDocument();
     expect(screen.getByText(/Test size/)).toBeInTheDocument();
+
+    const modelInfoRow = screen.getByText(/Test size/).parentElement
+
+    expect(within(modelInfoRow).getByText(/Created At/i)).toBeInTheDocument();
+    expect(within(modelInfoRow).getByText(/Duration/i)).toBeInTheDocument();
     expect(screen.getByText('Reset Database')).toBeInTheDocument();
     expect(await screen.findByAltText('Salary Histogram Plot')).toBeInTheDocument();
     expect(await screen.findByAltText('Salary Box Plot')).toBeInTheDocument();
@@ -272,8 +277,8 @@ describe('OutputSection', () => {
     );
     fireEvent.click(screen.getByText('see detail'));
 
-    const addDataBtn = screen.queryByText('Add Data'); 
-    const resetBtn = screen.getByText('Training ...'); 
+    const addDataBtn = screen.queryByText('Add Data');
+    const resetBtn = screen.getByText('Training ...');
     const retrainBtn = screen.getByText('Retrain Model');
 
     expect(resetBtn).toHaveClass('disabled');

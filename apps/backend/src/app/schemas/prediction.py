@@ -19,5 +19,5 @@ class PredictResponse(BaseModel):
     n_train: int
     n_test: int
 
-    model_version: str | None = None
-
+    created_at: str 
+    duration: str

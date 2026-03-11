@@ -260,6 +260,12 @@ const OutputSection = ({
           <div className="col">
             Test size: {predictData.n_test}
           </div>
+          <div className="col">
+            Created At: {predictData.created_at}
+          </div>
+          <div className="col">
+            Duration: {predictData.duration}
+          </div>
       </div>
 
       <div className="row g-2">
