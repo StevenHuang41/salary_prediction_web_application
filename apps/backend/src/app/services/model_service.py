@@ -52,13 +52,11 @@ class ModelService:
         if settings.use_cloud:
             self._download_cloud_artifacts()
 
-        if not settings.model_file.exists() or not settings.metadata_file.exists():
+        if not settings.model_file.exists():
             raise FileNotFoundError("Model files does not exists in artifacts/")
 
         self.model = joblib.load(settings.model_file)
 
-        with open(settings.metadata_file, "r") as f:
-            self.metadata = json.load(f)
 
 
     def _check(self, db: Session):
@@ -76,9 +74,16 @@ class ModelService:
 
 
     def get_metadata(self, db: Session) -> dict:
-        self._check(db)
+        if self.metadata:
+            return self.metadata
 
-        return self.metadata # type: ignore
+        try :
+            with open(settings.metadata_file, "r") as f:
+                self.metadata = json.load(f)
+
+            return self.metadata # type: ignore
+        except FileNotFoundError:
+            raise FileNotFoundError("Metadata does not exist in artifacts/")
 
 
     def predict(self, db: Session, df):

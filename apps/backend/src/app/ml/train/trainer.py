@@ -1,7 +1,8 @@
 import json
 import joblib
 import pandas as pd
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from sklearn.metrics import (
     mean_absolute_error,
     root_mean_squared_error,
@@ -89,14 +90,14 @@ class Trainer:
             "n_train": self.n_train,    # type: ignore
             "n_test": self.n_test,      # type: ignore
             "data_size": len(self.df),  # type: ignore
-            "created_at": datetime.now(timezone.utc).strftime("%d/%B/%Y %a %I:%M %p"),
+            "created_at": datetime.now(ZoneInfo("Asia/Taipei")).strftime("%d/%B/%Y %a %I:%M %p"),
             "duration": duration,
         }
         with open(settings.metadata_file, "w") as f:
             json.dump(metadata, f, indent=4, default=str)
 
     def run(self):
-        start = datetime.now(timezone.utc)
+        start = datetime.now(ZoneInfo("Asia/Taipei"))
         self.train()
-        duration = f"{(datetime.now(timezone.utc) - start).total_seconds():.2f} s"
+        duration = f"{(datetime.now(ZoneInfo("Asia/Taipei")) - start).total_seconds():.2f} s"
         self.save(duration)
