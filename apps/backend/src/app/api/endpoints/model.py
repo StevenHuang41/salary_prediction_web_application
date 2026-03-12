@@ -13,7 +13,7 @@ async def model_retrain(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    if model_service.model_is_training():
+    if model_service.is_training:
         return {
             "status": "already_training"
         }
@@ -36,3 +36,10 @@ async def model_status():
         "is_training": model_service.model_is_training()
     }
 
+@router.put("/model/data-sync")
+async def model_sync():
+    model_service.load_artifacts()
+    model_service.is_training = False
+    return {
+        "status": "ok",
+    }

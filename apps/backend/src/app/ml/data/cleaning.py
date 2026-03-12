@@ -27,13 +27,14 @@ def clean_salary(
     df = df.loc[(df["salary"] > lower_bound) & (df["salary"] < upper_bound)]
     return df
 
+
 def clean_data(
-    df: pd.DataFrame | None = None,
+    df: pd.DataFrame,
     has_target_col: bool = False,
     **kws,
-):
-    if df is None or df.empty:
-        return
+) -> pd.DataFrame:
+    if df.empty:
+        return df
 
     df = df.copy()
 

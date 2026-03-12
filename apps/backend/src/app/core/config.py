@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from pydantic.fields import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,10 +13,12 @@ class Settings(BaseSettings):
     backend_dir: Path = Path(__file__).resolve().parents[3]
 
     use_cloud: bool = False
-    model_bucket: str | None = None
-    gcp_project: str | None = None
-    training_job_name: str | None = None
     i_am: str = "backend"
+    gcp_project: str | None = None
+    model_bucket: str | None = None
+    training_job_name: str | None = None
+    
+    time_zone: str = "Asia/Taipei"
 
     @property
     def data_dir(self) -> Path:
@@ -50,6 +51,10 @@ class Settings(BaseSettings):
     @property
     def metadata_file(self) -> Path:
         return self.artifacts_dir / "metadata.json"
+
+    @property
+    def status_file(self) -> Path:
+        return self.artifacts_dir / "status.json"
 
     # -------------------------
     # Database

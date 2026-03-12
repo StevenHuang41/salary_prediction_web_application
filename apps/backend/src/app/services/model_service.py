@@ -1,8 +1,9 @@
 import json
+from typing import Literal
 import joblib
 from sqlalchemy.orm import Session
-from google.cloud import storage
 import requests
+from google.cloud import storage
 import google.auth as gauth
 import google.auth.transport.requests as gar
 
@@ -16,25 +17,43 @@ class ModelService:
     def __init__(self):
         self.repo = SalaryRepository()
         self.model = None
-        self.metadata = None
-        self._is_training = False
+        self.metadata: dict = {}
+
+        self.is_training: bool = False
+        self.trainer = Trainer()
 
 
-    def _download_cloud_artifacts(self):
+    def _download_cloud_artifacts(
+        self,
+        target: Literal["model", "metadata", "status", "all"] = "all",
+    ):
         client = storage.Client()
         bucket = client.bucket(settings.model_bucket)
 
         model_blob = bucket.blob("model.joblib")
         metadata_blob = bucket.blob("metadata.json")
+        status_blob = bucket.blob("status.json")
 
-        if not model_blob.exists() or not metadata_blob.exists():
+        if not model_blob.exists() \
+            or not metadata_blob.exists() \
+            or not status_blob.exists():
             raise FileNotFoundError("Model artifacts not found in cloud storage")
 
-        model_blob.download_to_filename(settings.model_file)
-        metadata_blob.download_to_filename(settings.metadata_file)
+        if target == "model":
+            model_blob.download_to_filename(settings.model_file)
+        elif target == "metadata":
+            metadata_blob.download_to_filename(settings.metadata_file)
+        elif target == "status":
+            status_blob.download_to_filename(settings.status_file)
+        else :
+            model_blob.download_to_filename(settings.model_file)
+            metadata_blob.download_to_filename(settings.metadata_file)
 
 
-    def _upload_cloud_artifacts(self):
+    def _upload_cloud_artifacts(
+        self,
+        target: Literal["model", "metadata", "status", "all"] = "all",
+    ):
         if not settings.use_cloud:
             return
 
@@ -44,75 +63,65 @@ class ModelService:
         client = storage.Client()
         bucket = client.bucket(settings.model_bucket)
 
-        bucket.blob("model.joblib").upload_from_filename(settings.model_file)
-        bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
+        if target == "model":
+            bucket.blob("model.joblib").upload_from_filename(settings.model_file)
+        elif target == "metadata":
+            bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
+        elif target == "status":
+            bucket.blob("status.json").upload_from_filename(settings.status_file)
+        else :
+            bucket.blob("model.joblib").upload_from_filename(settings.model_file)
+            bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
 
 
-    def load(self):
+    def model_is_training(self) -> bool:
+        if not settings.use_cloud:
+            return self.is_training
+
+        self._download_cloud_artifacts("status")
+
+        with open(settings.status_file, "r") as f:
+            status_f = json.load(f)
+
+        return status_f["status"] == "training"
+
+
+    def load_artifacts(self):
         if settings.use_cloud:
             self._download_cloud_artifacts()
 
-        if not settings.model_file.exists():
+        if not settings.model_file.exists() \
+            or not settings.metadata_file.exists():
             raise FileNotFoundError("Model files does not exists in artifacts/")
 
         self.model = joblib.load(settings.model_file)
 
+        with open(settings.metadata_file, "r") as f:
+            self.metadata = json.load(f)
 
 
-    def _check(self, db: Session):
-        if self.model is None or self.metadata is None:
-            try :
-                self.load()
-            except FileNotFoundError:
-                self.train(db)
-                self.load()
-
-
-    def _clear_old_model(self):
-        self.model = None
-        self.metadata = None
-
-
-    def get_metadata(self, db: Session) -> dict:
-        if self.metadata:
-            return self.metadata
-
-        try :
-            with open(settings.metadata_file, "r") as f:
-                self.metadata = json.load(f)
-
-            return self.metadata # type: ignore
-        except FileNotFoundError:
-            raise FileNotFoundError("Metadata does not exist in artifacts/")
-
-
-    def predict(self, db: Session, df):
-        self._check(db)
+    def predict(self, df):
+        if self.model is None:
+            self.load_artifacts()
 
         return self.model.predict(df) # type: ignore
 
 
     def _set_training_status(self, status: str):
-        self._is_training = True if status == "training" else False
+        self.is_training = True if status == "training" else False
 
-        if not settings.use_cloud:
-            return
+        with open(settings.status_file, "w") as f:
+            json.dump({"status": status}, f, indent=4)
 
-        client = storage.Client()
-        bucket = client.bucket(settings.model_bucket)
-
-        bucket.blob("status.json").upload_from_string(
-            json.dumps({"status": status}),
-            content_type="application/json"
-        )
+        if settings.use_cloud:
+            self._upload_cloud_artifacts("status")
 
 
     def _run_training_job(self, db: Session):
-
         df = self.repo.get_dataframe(db)
 
-        trainer = Trainer(df)
-        trainer.run()
+        self.trainer.load_data(df)
+        self.trainer.run()
 
         self._upload_cloud_artifacts()
 
@@ -120,12 +129,10 @@ class ModelService:
 
 
     def _call_training_api(self):
-        self._set_training_status("training")
-
         url = (
             f"https://run.googleapis.com/v2/projects/"
-                f"{settings.gcp_project}/locations/asia-east1/jobs/"
-                f"{settings.training_job_name}:run"
+            f"{settings.gcp_project}/locations/asia-east1/jobs/"
+            f"{settings.training_job_name}:run"
         )
 
         credentials, _ = gauth.default()
@@ -142,33 +149,14 @@ class ModelService:
         if response.status_code not in (200, 201):
             raise RuntimeError(response.text)
 
+
     def train(self, db: Session):
-
-        if settings.i_am == "jobrun":
-            self._clear_old_model()
+        self._set_training_status("training")
+        
+        if not settings.use_cloud or settings.i_am == "jobrun":
             self._run_training_job(db)
-
         else :
             self._call_training_api()
-
-
-    def model_is_training(self) -> bool:
-        if not settings.use_cloud:
-            return self._is_training
-
-        client = storage.Client()
-        bucket = client.bucket(settings.model_bucket)
-
-        blob = bucket.blob("status.json")
-
-        if not blob.exists():
-            print("Warning: status.json does not exist !!!")
-            return False
-
-        status_f = json.loads(blob.download_as_string())
-        return status_f["status"] == "training"
-
-
 
 
 model_service = ModelService()

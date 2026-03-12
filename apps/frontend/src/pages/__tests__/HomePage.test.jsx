@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, act } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, expect, it, beforeEach } from 'vitest';
 import HomePage from '../HomePage';
 
@@ -74,19 +74,20 @@ vi.mock('../../api/dataService', () => ({
   retrainModel: vi.fn(),
   resetModel: vi.fn(),
   getModelStatus: vi.fn(),
+  modelDataSync: vi.fn(),
 }));
 
 import {
-  getModelStatus,
   predictSalary,
   resetModel,
-  retrainModel
+  retrainModel,
+  getModelStatus,
+  modelDataSync,
 } from '../../api/dataService';
 
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getModelStatus.mockResolvedValue({ is_training: false });
   });
 
   it('renders HomePage components', () => {
@@ -114,9 +115,7 @@ describe('HomePage', () => {
   });
 
   it("renders error component when prediction fails", async () => {
-    predictSalary.mockRejectedValue(
-      new Error("predict fails")
-    );
+    predictSalary.mockRejectedValue(new Error("predict fails"));
 
     render(<HomePage />);
 
@@ -126,7 +125,7 @@ describe('HomePage', () => {
     expect(await screen.findByText(/predict fails/)).toBeInTheDocument();
   });
 
-  it("does not call predictSalary when formData is missing", async () => {
+  it("does not call predictSalary when missing formData", async () => {
     render(<HomePage />);
 
     fireEvent.click(screen.getByText("Predict Salary"));
@@ -153,7 +152,8 @@ describe('HomePage', () => {
     consoleSpy.mockRestore()
   });
 
-  it("retrain model success", async () => {
+  // retrain
+  it("retrain success shows in toast", async () => {
     predictSalary.mockResolvedValue({ salary: 100_000 });
     retrainModel.mockResolvedValue({});
 
@@ -177,7 +177,7 @@ describe('HomePage', () => {
   });
 
   it("retrain failure shows toast", async () => {
-    predictSalary.mockResolvedValue({ salary: 100000 });
+    predictSalary.mockResolvedValue({ salary: 100_000 });
     retrainModel.mockRejectedValue(new Error());
 
     render(<HomePage />);
@@ -197,7 +197,8 @@ describe('HomePage', () => {
     });
   });
 
-  it("reset model success", async () => {
+  //reset
+  it("reset success shows in toast", async () => {
     predictSalary.mockResolvedValue({ salary: 100_000 });
     resetModel.mockResolvedValue({});
 
@@ -220,9 +221,9 @@ describe('HomePage', () => {
     );
   });
 
-  it("reset model fail", async () => {
+  it("reset failure shows in toast", async () => {
     predictSalary.mockResolvedValue({ salary: 100_000 });
-    resetModel.mockRejectedValue({});
+    resetModel.mockRejectedValue(new Error());
 
     render(<HomePage />);
 
@@ -258,64 +259,86 @@ describe('HomePage', () => {
     )
   });
 
-  it('shows model complete retraining toast', async () => {
-    getModelStatus
-      .mockResolvedValueOnce({ is_training: false })   // mount
-      .mockResolvedValueOnce({ is_training: false })  // pollinggetModelStatus.mockResolvedValue({ is_training: true });
-
+  it('shows model completed retraining toast', async () => {
     predictSalary.mockResolvedValue({ salary: 100_000 });
+
+    getModelStatus
+      .mockResolvedValueOnce({ is_training: false })  // mount
+      .mockResolvedValueOnce({ is_training: true })
+      .mockResolvedValueOnce({ is_training: false })
+
     retrainModel.mockResolvedValue({});
 
     render(<HomePage />);
+
     fireEvent.click(screen.getByText("Fill Form"));
     fireEvent.click(screen.getByText("Predict Salary"));
+
     await screen.findByText("OutputSection");
 
-    fireEvent.click(screen.getByText("Retrain")); // click retrain
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByText("Retrain"));
 
-    await waitFor(() => {
-      expect(retrainModel).toHaveBeenCalled();
-    });
+    expect(addToast).toHaveBeenCalledWith("Model retraining ...", "info");
 
-    await waitFor(() => {
-      expect(addToast).toHaveBeenCalledWith(
-        "Model training completed!",
-        "success"
-      );
-    }, { timeout: 4000 });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(addToast).not.toHaveBeenCalledWith(
+      "Model training completed!",
+      "success"
+    );
 
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(addToast).toHaveBeenCalledWith(
+      "Model training completed!",
+      "success"
+    );
+    vi.useRealTimers();
+    await expect(modelDataSync).toHaveBeenCalled();
   });
 
   it('shows model complete reseting toast', async () => {
+    predictSalary.mockResolvedValue({ salary: 100_000 });
+
     getModelStatus
-      .mockResolvedValueOnce({ is_training: false })   // mount
-      .mockResolvedValueOnce({ is_training: false })  // pollinggetModelStatus.mockResolvedValue({ is_training: true });
+      .mockResolvedValueOnce({ is_training: false })  // mount
+      .mockResolvedValueOnce({ is_training: true })
+      .mockResolvedValueOnce({ is_training: false })
 
     resetModel.mockResolvedValue({});
 
     render(<HomePage />);
+
     fireEvent.click(screen.getByText("Fill Form"));
     fireEvent.click(screen.getByText("Predict Salary"));
+
     await screen.findByText("OutputSection");
 
-    fireEvent.click(screen.getByText("Reset")); // click retrain
+    vi.useFakeTimers()
+    fireEvent.click(screen.getByText("Reset"));
 
-    await waitFor(() => {
-      expect(resetModel).toHaveBeenCalled();
-    });
+    expect(addToast).toHaveBeenCalledWith(
+      "Model resetting ...",
+      "info"
+    );
 
-    await waitFor(() => {
-      expect(addToast).toHaveBeenCalledWith(
-        "Model resetting completed!",
-        "success"
-      );
-    }, { timeout: 4000 });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(addToast).not.toHaveBeenCalledWith(
+      "Model resetting completed!",
+      "success"
+    );
 
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(addToast).toHaveBeenCalledWith(
+      "Model resetting completed!",
+      "success"
+    );
+
+    vi.useRealTimers();
   });
 
 
   it(
-    'set isTraining and trainingType to false and null when pooling fails',
+    'set isTraining and trainingType to false and null when polling fails',
     async () => {
       getModelStatus
         .mockResolvedValueOnce({ is_training: false })   // mount
@@ -324,20 +347,29 @@ describe('HomePage', () => {
       resetModel.mockResolvedValue({});
 
       render(<HomePage />);
+
       fireEvent.click(screen.getByText("Fill Form"));
       fireEvent.click(screen.getByText("Predict Salary"));
+
       await screen.findByText("OutputSection");
 
-      fireEvent.click(screen.getByText("Reset")); // click retrain
+      vi.useFakeTimers()
+      fireEvent.click(screen.getByText("Reset"));
 
-      await waitFor(() => {
-        expect(getModelStatus).toHaveBeenCalled();
-      });
+      expect(getModelStatus).toHaveBeenCalled();
 
-      await waitFor(() => {
-        expect(getModelStatus).toHaveBeenCalledTimes(2);
-      }, { timeout: 4000 });
+      expect(addToast).toHaveBeenCalledWith(
+        "Model resetting ...",
+        "info"
+      );
 
+      await vi.advanceTimersByTimeAsync(5000);
+      addToast();
+      expect(addToast).toHaveBeenCalledWith(
+        "Failed to get model status",
+        "danger"
+      );
+      vi.useRealTimers();
     }
   );
 

@@ -1,4 +1,4 @@
-import { vi, describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { vi, describe, expect, it, beforeEach } from 'vitest';
 
 import { api0 } from '../axiosInstance';
 import {
@@ -8,6 +8,7 @@ import {
   fetchSalaryBoxPlot,
   retrainModel,
   resetModel,
+  modelDataSync,
   addData,
   getModelStatus,
 } from '../dataService';
@@ -19,10 +20,6 @@ beforeEach(() => {
   logSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock');
 });
-
-afterEach(() => {
-  vi.resetAllMocks();
-})
 
 vi.mock('../axiosInstance', () => ({
   api0: {
@@ -155,6 +152,14 @@ describe('addData', () => {
     api0.post.mockResolvedValue({ data: {} });
     await addData(formData);
     expect(api0.post).toHaveBeenCalledWith('/records', formData);
+  });
+});
+
+describe('modelDataSync', () => {
+  it('calls model data sync api successfully', async () => {
+    api0.put.mockResolvedValue({ data: {} });
+    await modelDataSync();
+    expect(api0.put).toHaveBeenCalledWith('/model/data-sync');
   });
 });
 

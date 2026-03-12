@@ -25,7 +25,11 @@ const OutputSection = ({
 
   const [showDetail, setShowDetail] = useState(false);
 
-  const [imgURLs, setImgURLs] = useState([null, null]);
+  const [imgURLs, setImgURLs] = useState({});
+  const imgFetchers = {
+    hist: fetchSalaryHistPlot,
+    box: fetchSalaryBoxPlot,
+  }
 
   const [isValid, setIsValid] = useState(false);
 
@@ -73,15 +77,17 @@ const OutputSection = ({
     setIsValid(predicted !== changed);
 
     const fetchPlots = async () => {
-      try {
-        const [hist, box] = await Promise.all([
-          fetchSalaryHistPlot(parsed),
-          fetchSalaryBoxPlot(parsed),
-        ]);
-        setImgURLs([hist, box]);
-      } catch (err) {
-        console.error(err);
-      }
+
+      Object.entries(imgFetchers).forEach(([key, fetcher]) => {
+        fetcher(parsed)
+          .then((img) => {
+            setImgURLs(prev => ({ ...prev, [key]: img }));
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+
     };
     const timeout = setTimeout(fetchPlots, 200);
     return () => clearTimeout(timeout);
@@ -132,6 +138,28 @@ const OutputSection = ({
       addToast("Failed to add data", "danger");
     }
   };
+
+  const renderCarousel = () => {
+    if (!imgURLs.hist) {
+      return (
+        <LoadingResult
+          loadingText="Loading carousel images"
+          setStyle={{ fontSize: "2em", height: "15vh" }}
+        />
+      )
+    }
+
+    return (
+      <div className="row mx-0">
+        <div className="col d-flex justify-content-center px-0">
+          <MyCarousel
+            images={Object.values(imgURLs)}
+            alts={["Salary Histogram Plot", "Salary Box Plot"]}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (<>
     {/* predict salary value */}
@@ -225,25 +253,7 @@ const OutputSection = ({
     </div>
 
     {/* Carousel */}
-    {!showDetail && (
-      imgURLs[0] === null ? (
-    <LoadingResult
-      loadingText={`Loading carousel images`}
-      setStyle={{ fontSize: "2em", height: "15vh" }}
-    />
-      ) : (
-    <div className="row mx-0">
-      <div className="col d-flex justify-content-center px-0 ">
-        <MyCarousel
-          images={imgURLs}
-          alts={["Salary Histogram Plot", "Salary Box Plot"]}
-        />
-      </div>
-    </div>
-      )
-    )}
-
-    {/* ///////////// */}
+    {!showDetail && renderCarousel()}
 
     {/* detail of model */}
     {showDetail && (<>
@@ -340,7 +350,7 @@ const OutputSection = ({
         img-fluid
         mb-2
         `}
-        src={imgURLs[0]}
+        src={imgURLs.hist}
         alt="Salary Histogram Plot"
       />
 
@@ -349,29 +359,12 @@ const OutputSection = ({
         col
         img-fluid
         `}
-        src={imgURLs[1]}
+        src={imgURLs.box}
         alt="Salary Box Plot"
       />
     </div>
     )}
   </>);
-
-
-
-
-  // {
-  /* <div className="col-12">Age:{dataFromForm.age}</div>
-    <div className="col-12">Gender:{dataFromForm.gender}</div>
-    <div className="col-12">
-      Education Level:{dataFromForm.education_level}
-    </div>
-    <div className="col-12">Job Title:{dataFromForm.job_title}</div>
-    <div className="col-12">
-      Years of Experience:{dataFromForm.years_of_experience}
-    </div> */
-  // }
-  //     </>
-  //   );
 };
 
 export default OutputSection;

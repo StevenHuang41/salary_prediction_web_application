@@ -63,6 +63,11 @@ const getModelStatus = async () => {
   return res.data
 }
 
+const modelDataSync = async () => {
+  const res = await api0.put('/model/data-sync');
+  return res.data
+}
+
 
 export {
   getUniqJobTitle,
@@ -73,4 +78,5 @@ export {
   resetModel,
   addData,
   getModelStatus,
+  modelDataSync,
 };

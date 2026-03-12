@@ -17,49 +17,61 @@ from app.ml.tune import tune_models
 
 
 class Trainer:
-    def __init__(self, df: pd.DataFrame | None = None):
-        self.df = df if df is not None else pd.DataFrame()
-        self.model = None
-        self.best_model_name = None
-        self.best_params = None
-        self.mse = None
-        self.mae = None
-        self.rmse = None
-        self.n_train = None
-        self.n_test = None
+    def __init__(self):
+        self.X_train: pd.DataFrame
+        self.y_train: pd.Series
+        self.X_test: pd.DataFrame
+        self.y_test: pd.Series
 
-    def load_data(self):
-        if self.df.empty:
-            self.df = pd.read_csv(settings.raw_data_file)
+        self.model = None,
+        self.best_model_name: str = ""
+        self.best_params: dict = {}
+        self.mse: float = 0
+        self.mae: float = 0
+        self.rmse: float = 0
+        self.n_train: int = 0
+        self.n_test: int = 0
 
-        self.df = clean_data(self.df, has_target_col=True)
-        train_df, test_df = split_data(self.df)
 
-        X_train = train_df.drop("salary", axis=1)
-        y_train = train_df["salary"]
-        self.n_train = len(X_train)
+    def load_data(self, df: pd.DataFrame | None = None):
+        if df is None or df.empty:
+            df = pd.read_csv(settings.raw_data_file)
 
-        X_test = test_df.drop("salary", axis=1)
-        y_test = test_df["salary"]
-        self.n_test = len(X_test)
+        df = clean_data(df, has_target_col=True)
+        train_df, test_df = split_data(df)
 
-        return X_train, y_train, X_test, y_test
+        self.X_train = train_df.drop("salary", axis=1)
+        self.y_train = train_df["salary"] # type: ignore
+        self.n_train = len(self.X_train)
+
+        self.X_test = test_df.drop("salary", axis=1)
+        self.y_test = test_df["salary"] # type: ignore
+        self.n_test = len(self.X_test)
+
+        return (
+            self.X_train,
+            self.y_train,
+            self.X_test,
+            self.y_test,
+        )
+
 
     def train(self, n_trial: int = 10):
-        X_train, y_train, X_test, y_test = self.load_data()
+        if self.X_train is None:
+            self.load_data()
 
         # compare
         self.best_model_name, _ = compare_models(
             MODEL_REGISTRY,
-            X_train,
-            y_train,
+            self.X_train,
+            self.y_train,
         )
 
         # tune
         self.best_params = tune_models(
             self.best_model_name,
-            X_train,
-            y_train,
+            self.X_train,
+            self.y_train,
             n_trials=n_trial,
         )
 
@@ -69,13 +81,13 @@ class Trainer:
         )
 
         # train best model
-        self.model.fit(X_train, y_train)
+        self.model.fit(self.X_train, self.y_train)
 
         # evaluate
-        y_pred = self.model.predict(X_test)
-        self.mse = mean_squared_error(y_test, y_pred)
-        self.mae = mean_absolute_error(y_test, y_pred)
-        self.rmse = root_mean_squared_error(y_test, y_pred)
+        y_pred = self.model.predict(self.X_test)
+        self.mse = mean_squared_error(self.y_test, y_pred)
+        self.mae = mean_absolute_error(self.y_test, y_pred)
+        self.rmse = root_mean_squared_error(self.y_test, y_pred)
 
 
     def save(self, duration: str = "No data"):
@@ -87,17 +99,17 @@ class Trainer:
             "mse": self.mse,
             "mae": self.mae,
             "rmse": self.rmse,
-            "n_train": self.n_train,    # type: ignore
-            "n_test": self.n_test,      # type: ignore
-            "data_size": len(self.df),  # type: ignore
-            "created_at": datetime.now(ZoneInfo("Asia/Taipei")).strftime("%d/%B/%Y %a %I:%M %p"),
+            "n_train": self.n_train,
+            "n_test": self.n_test,
+            "data_size": self.n_train + self.n_test,
+            "created_at": datetime.now(ZoneInfo(settings.time_zone)).strftime("%d/%B/%Y %a %I:%M %p"),
             "duration": duration,
         }
         with open(settings.metadata_file, "w") as f:
             json.dump(metadata, f, indent=4, default=str)
 
     def run(self):
-        start = datetime.now(ZoneInfo("Asia/Taipei"))
+        start = datetime.now(ZoneInfo(settings.time_zone))
         self.train()
-        duration = f"{(datetime.now(ZoneInfo("Asia/Taipei")) - start).total_seconds():.2f} s"
+        duration = f"{(datetime.now(ZoneInfo(settings.time_zone)) - start).total_seconds():.2f} s"
         self.save(duration)

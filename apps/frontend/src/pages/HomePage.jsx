@@ -4,6 +4,7 @@ import {
   retrainModel,
   resetModel,
   getModelStatus,
+  modelDataSync,
 } from '../api/dataService';
 
 import InputForm from '../components/InputForm';
@@ -121,6 +122,7 @@ const HomePage = () => {
 
           if (trainingType === "retrain") {
             addToast("Model training completed!", "success");
+            modelDataSync();
           }
           if (trainingType === "reset") {
             addToast("Model resetting completed!", "success");
@@ -130,10 +132,11 @@ const HomePage = () => {
           setTrainingType(null)
         }
       } catch (err) {
+        addToast("Failed to get model status", "danger");
         setIsTraining(false);
         setTrainingType(null)
       }
-    }, 3000)
+    }, 5000)
     return () => clearInterval(interval);
   }, [isTraining]);
 

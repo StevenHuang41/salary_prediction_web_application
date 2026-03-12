@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
         if repo.count(db) == 0:
             data_service.seed(db)
 
-        model_service.load()
+        model_service.load_artifacts()
         data_service.load(db)
 
         db.close()

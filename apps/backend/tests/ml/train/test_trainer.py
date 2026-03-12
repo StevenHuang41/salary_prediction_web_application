@@ -11,9 +11,9 @@ from app.ml.train.trainer import Trainer
 
 
 def test_trainer_load(sample_df):
-    trainer = Trainer(sample_df)
+    trainer = Trainer()
 
-    X_tra, y_tra, X_tes, y_tes = trainer.load_data()
+    X_tra, y_tra, X_tes, y_tes = trainer.load_data(sample_df)
 
     assert not X_tra.empty
     assert "salary" not in X_tes.columns
@@ -23,7 +23,7 @@ def test_trainer_load(sample_df):
 @patch("app.ml.train.trainer.MODEL_REGISTRY")
 @patch("app.ml.train.trainer.tune_models")
 @patch("app.ml.train.trainer.compare_models")
-def test_trainer_train(mock_compare, mock_tune, mock_registry, sample_df):
+def test_trainer_train(mock_compare, mock_tune, mock_registry, sample_df: pd.DataFrame):
 
     mock_compare.return_value = ("linear", {})
     mock_tune.return_value = {"param": True}
@@ -33,7 +33,8 @@ def test_trainer_train(mock_compare, mock_tune, mock_registry, sample_df):
 
     mock_registry.__getitem__.return_value = MagicMock(return_value=mock_model_instance)
 
-    trainer = Trainer(sample_df)
+    trainer = Trainer()
+    trainer.load_data(sample_df)
     trainer.train()
 
     assert trainer.best_model_name == "linear"
@@ -50,6 +51,8 @@ def test_trainer_save(mock_dump, tmp_path):
     with patch("app.ml.train.trainer.settings", autospec=False) as mock_settings:
         mock_settings.model_file = mock_model_path
         mock_settings.metadata_file = mock_metadata_path
+        mock_settings.time_zone = "Asia/Taipei"
+
         mock_dump
 
         trainer = Trainer()
@@ -62,7 +65,6 @@ def test_trainer_save(mock_dump, tmp_path):
         trainer.rmse = 3000
         trainer.n_train = 2
         trainer.n_test = 1
-        trainer.df = pd.DataFrame([1, 2, 3])
 
         trainer.save()
 
@@ -85,6 +87,7 @@ def test_trainer_run_integration(mock_read, sample_df, tmp_path):
         patch("app.ml.train.trainer.settings", autospec=False) as mock_settings
     ):
         mock_settings.raw_data_file = "fake.csv"
+        mock_settings.time_zone = "Asia/Taipei"
 
         trainer = Trainer()
         trainer.run()
