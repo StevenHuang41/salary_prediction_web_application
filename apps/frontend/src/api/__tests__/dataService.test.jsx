@@ -170,4 +170,12 @@ describe('getModelStatus', () => {
     await getModelStatus();
     expect(api0.get).toHaveBeenCalledWith('/model/status');
   });
+
+  it('return "isTraining" as false when api fails', async () => {
+    api0.get.mockRejectedValue();
+    const res = await getModelStatus();
+    expect(api0.get).toHaveBeenCalledWith('/model/status');
+    expect(logSpy).toHaveBeenCalled();
+    expect(res.is_training === false)
+  });
 });

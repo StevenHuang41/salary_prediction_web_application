@@ -59,8 +59,13 @@ const resetModel = async () => {
 };
 
 const getModelStatus = async () => {
-  const res = await api0.get('/model/status');
-  return res.data
+  try {
+    const res = await api0.get('/model/status');
+    return res.data;
+  } catch (err) {
+    console.error(err)
+    return { is_training: false };
+  }
 }
 
 const modelDataSync = async () => {
