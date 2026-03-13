@@ -68,15 +68,6 @@ const InputForm = ({
       error: null,
     });
 
-    // TODO:
-    console.log(
-      `age ${age}`,
-      `gender ${gender}`,
-      `educationLevel ${educationLevel}`,
-      `jobTitle ${jobTitle}`,
-      `yearE ${yearE}`,
-    );
-
   }, [age, gender, educationLevel, jobTitle, yearE]);
 
   // submit

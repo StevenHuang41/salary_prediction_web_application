@@ -46,8 +46,6 @@ const HomePage = () => {
       try {
         const res = await getModelStatus();
         setIsTraining(res.is_training);
-        // TODO:
-        console.log("is model training? (mount)", isTraining);
         if (res.is_training && !hasShownReloadToast.current) {
           hasShownReloadToast.current = true;
           addToast("Model is still training ...", "info");
@@ -56,7 +54,6 @@ const HomePage = () => {
         console.error(err);
       }
     };
-
     checkStatus();
   }, []);
 
@@ -130,6 +127,8 @@ const HomePage = () => {
 
           if (trainingType === "retrain") {
             addToast("Model training completed!", "success");
+            // TODO: 
+            console.log("do model data sync");
             await modelDataSync();
           }
           if (trainingType === "reset") {
@@ -146,7 +145,7 @@ const HomePage = () => {
       }
     }, 5000)
     return () => clearInterval(interval);
-  }, [isTraining]);
+  }, [isTraining, trainingType]);
 
   const renderPredictSection = () => {
     if (predictState.error) {
