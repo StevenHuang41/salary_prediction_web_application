@@ -83,14 +83,14 @@ jobs:
             --image  asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/salary-backend/backend:${{ github.sha }} \
             --region asia-east1 \
             --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
+            --set-env-vars I_AM=backend \
             --set-env-vars USE_CLOUD=true \
             --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
             --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
             --set-env-vars GCP_PROJECT=${{ secrets.GCP_PROJECT }} \
             --set-env-vars TRAINING_JOB_NAME=${{ secrets.TRAINING_JOB_NAME }} \
-            --set-env-vars I_AM="backend" \
-            --cpu 2 \
-            --memory 1Gi \
+            --cpu 4 \
+            --memory 2Gi \
             --concurrency 2 \
             --min-instances 0 \
             --max-instances 2 \
@@ -99,16 +99,16 @@ jobs:
       - name: Update Cloud Run Job
         run: |
           gcloud run jobs update ${{ secrets.TRAINING_JOB_NAME }} \
-          --image asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/salary-backend/backend:${{ github.sha }} \
-          --region asia-east1 \
-          --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
-          --set-env-vars I_AM=jobrun \
-          --set-env-vars USE_CLOUD=true \
-          --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
-          --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
-          --cpu 8 \
-          --memory 16Gi \
-          --task-timeout 3600s \
-          --max-retries 1 \
-          --tasks 1 \
-          --parallelism 1
+            --image asia-east1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/salary-backend/backend:${{ github.sha }} \
+            --region asia-east1 \
+            --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
+            --set-env-vars I_AM=jobrun \
+            --set-env-vars USE_CLOUD=true \
+            --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --cpu 8 \
+            --memory 16Gi \
+            --task-timeout 3600s \
+            --max-retries 1 \
+            --tasks 1 \
+            --parallelism 1
