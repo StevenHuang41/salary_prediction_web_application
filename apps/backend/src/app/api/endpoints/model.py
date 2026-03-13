@@ -39,7 +39,7 @@ async def model_status():
 @router.put("/model/data-sync")
 async def model_sync():
     model_service.load_artifacts()
-    model_service.is_training = False
+    model_service._set_training_status("ready")
     return {
         "status": "ok",
     }

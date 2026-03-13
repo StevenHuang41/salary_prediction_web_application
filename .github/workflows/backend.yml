@@ -103,6 +103,7 @@ jobs:
           --region asia-east1 \
           --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
           --set-env-vars I_AM=jobrun \
+          --set-env-vars USE_CLOUD=true \
           --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
           --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
           --cpu 8 \

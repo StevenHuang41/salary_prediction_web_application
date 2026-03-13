@@ -107,7 +107,7 @@ class ModelService:
         return self.model.predict(df) # type: ignore
 
 
-    def _set_training_status(self, status: str):
+    def set_training_status(self, status: str):
         self.is_training = True if status == "training" else False
 
         with open(settings.status_file, "w") as f:
@@ -125,7 +125,7 @@ class ModelService:
 
         self._upload_cloud_artifacts()
 
-        self._set_training_status("ready")
+        self.set_training_status("ready")
 
 
     def _call_training_api(self):
@@ -151,11 +151,11 @@ class ModelService:
 
 
     def train(self, db: Session):
-        self._set_training_status("training")
-        
+
         if not settings.use_cloud or settings.i_am == "jobrun":
             self._run_training_job(db)
         else :
+            self.set_training_status("training")
             self._call_training_api()
 
 
