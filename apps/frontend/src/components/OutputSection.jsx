@@ -129,7 +129,8 @@ const OutputSection = ({
       ...dataFromForm,
       salary: parse2Number(salaryInput),
     }
-    // console.log(new_record);
+    // TODO:
+    console.log('new_record', new_record);
     try {
       await addData(new_record);
       setDBChanged(true);

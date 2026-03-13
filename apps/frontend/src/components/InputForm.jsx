@@ -52,7 +52,7 @@ const InputForm = ({
     getData();
   }, []);
 
-  // update formData
+  // update formData when selections change
   useEffect(() => {
     setFormData({
       age: age,
@@ -67,6 +67,15 @@ const InputForm = ({
       loading: null,
       error: null,
     });
+
+    // TODO:
+    console.log(
+      `age ${age}`,
+      `gender ${gender}`,
+      `educationLevel ${educationLevel}`,
+      `jobTitle ${jobTitle}`,
+      `yearE ${yearE}`,
+    );
 
   }, [age, gender, educationLevel, jobTitle, yearE]);
 

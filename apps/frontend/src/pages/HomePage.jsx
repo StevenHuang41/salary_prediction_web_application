@@ -21,7 +21,13 @@ const HomePage = () => {
     error: null,
   });
 
-  const [formData, setFormData] = useState(null);
+  const [formData, setFormData] = useState({
+    age: '',
+    gender: '',
+    educationLevel: '',
+    jobTitle: '',
+    yearE: '',
+  });
 
   const [isTraining, setIsTraining] = useState(false);
   const [trainingType, setTrainingType] = useState(null);
@@ -40,6 +46,8 @@ const HomePage = () => {
       try {
         const res = await getModelStatus();
         setIsTraining(res.is_training);
+        // TODO:
+        console.log("is model training? (mount)", isTraining);
         if (res.is_training && !hasShownReloadToast.current) {
           hasShownReloadToast.current = true;
           addToast("Model is still training ...", "info");
@@ -53,7 +61,7 @@ const HomePage = () => {
   }, []);
 
   const handlePredict = async () => {
-    if (!formData) return;
+    if (Object.values(formData).some(value => value === "")) return;
 
     setPredictState({
       data: null,
