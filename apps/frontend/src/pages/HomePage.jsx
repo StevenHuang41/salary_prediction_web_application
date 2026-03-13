@@ -122,7 +122,7 @@ const HomePage = () => {
 
           if (trainingType === "retrain") {
             addToast("Model training completed!", "success");
-            modelDataSync();
+            await modelDataSync();
           }
           if (trainingType === "reset") {
             addToast("Model resetting completed!", "success");
