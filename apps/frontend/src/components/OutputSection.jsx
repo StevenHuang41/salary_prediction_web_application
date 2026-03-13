@@ -264,6 +264,9 @@ const OutputSection = ({
             Root Mean Square Error: {predictData.rmse.toFixed(2)}
           </div>
           <div className="col">
+            R2: {predictData.r2}
+          </div>
+          <div className="col">
             Train size: {predictData.n_train}
           </div>
           <div className="col">

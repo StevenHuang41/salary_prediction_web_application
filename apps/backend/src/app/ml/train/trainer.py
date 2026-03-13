@@ -7,6 +7,7 @@ from sklearn.metrics import (
     mean_absolute_error,
     root_mean_squared_error,
     mean_squared_error,
+    r2_score,
 )
 
 from app.core.config import settings
@@ -29,6 +30,7 @@ class Trainer:
         self.mse: float = 0
         self.mae: float = 0
         self.rmse: float = 0
+        self.r2: float = 0
         self.n_train: int = 0
         self.n_test: int = 0
 
@@ -88,6 +90,7 @@ class Trainer:
         self.mse = mean_squared_error(self.y_test, y_pred)
         self.mae = mean_absolute_error(self.y_test, y_pred)
         self.rmse = root_mean_squared_error(self.y_test, y_pred)
+        self.r2 = r2_score(self.y_test, y_pred)
 
 
     def save(self, duration: str = "No data"):
@@ -99,6 +102,7 @@ class Trainer:
             "mse": self.mse,
             "mae": self.mae,
             "rmse": self.rmse,
+            "r2": self.r2,
             "n_train": self.n_train,
             "n_test": self.n_test,
             "data_size": self.n_train + self.n_test,

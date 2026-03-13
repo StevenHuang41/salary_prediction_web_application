@@ -15,9 +15,10 @@ class PredictResponse(BaseModel):
     mse: float
     mae: float
     rmse: float
+    r2: float
 
     n_train: int
     n_test: int
 
-    created_at: str 
+    created_at: str
     duration: str
