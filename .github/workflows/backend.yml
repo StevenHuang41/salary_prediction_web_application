@@ -96,6 +96,7 @@ jobs:
             --max-instances 2 \
             --allow-unauthenticated
 
+          
       - name: Update Cloud Run Job
         run: |
           gcloud run jobs update ${{ secrets.TRAINING_JOB_NAME }} \
