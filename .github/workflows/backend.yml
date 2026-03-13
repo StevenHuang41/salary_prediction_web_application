@@ -91,7 +91,7 @@ jobs:
             --set-env-vars I_AM="backend" \
             --cpu 2 \
             --memory 1Gi \
-            --concurrency 4 \
+            --concurrency 2 \
             --min-instances 0 \
             --max-instances 2 \
             --allow-unauthenticated
