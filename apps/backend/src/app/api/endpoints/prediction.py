@@ -22,7 +22,7 @@ async def predict(request: PredictRequest):
         mse=float(metadata["mse"]),
         mae=float(metadata["mae"]),
         rmse=float(metadata["rmse"]),
-        r2=float(metadata["r2"]),
+        r2=float(round(metadata["r2"], 2)),
         n_train=int(metadata["n_train"]),
         n_test=int(metadata["n_test"]),
         created_at=str(metadata["created_at"]),

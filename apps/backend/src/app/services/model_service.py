@@ -101,8 +101,6 @@ class ModelService:
 
 
     def predict(self, df):
-        # if self.model is None:
-        #     self.load_artifacts()
         return self.model.predict(df) # type: ignore
 
 
@@ -149,6 +147,7 @@ class ModelService:
 
     def train(self, db: Session):
         if not settings.use_cloud or settings.i_am == "jobrun":
+            self.is_training = True
             self._run_training_job(db)
             self.set_training_status("ready")
         else :

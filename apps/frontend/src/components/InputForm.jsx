@@ -155,7 +155,7 @@ const InputForm = ({
           className="col col-xl-3"
           selectId="eduLevSelectInput"
           options={[
-            {value: 'No specified', text: 'No specified'},
+            {value: 'No Specified', text: 'No Specified'},
             {value: 'High School', text: 'High School'},
             {value: 'Bachelor', text: 'Bachelor'},
             {value: 'Master', text: 'Master'},

@@ -8,6 +8,7 @@ class GenderEnum(str, Enum):
 
 
 class EducationLevelEnum(str, Enum):
+    unknown = "No Specified"
     high_school = "High School"
     bachelor = "Bachelor"
     master = "Master"
