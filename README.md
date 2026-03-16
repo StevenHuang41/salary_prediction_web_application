@@ -1,11 +1,16 @@
 # 📈 Salary Prediction Web Application
 
-A full-stack machine learning application that predicts salaries through a production-style ML pipeline.
+A **full-stack machine learning application** that predicts salaries through a production-style ML pipeline.
 
 This project includes automated data preprocessing, feature engineering, hyperparameter optimization, model retraining, and interactive prediction UI –– all containerized for scalable deployment.
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+<p align="center">
+    <a href="docs/demo.mp4">
+        <img src="docs/demo.gif" width="800" />
+    </a>
+</p>
 
+[**Quick Start**](#)
 
 ## 🔎 Overview
 
@@ -26,257 +31,123 @@ This project includes automated data preprocessing, feature engineering, hyperpa
 ## ✨ Features
 
 - **End-to-End Machine Learning System**
-    - Automated data preprocessing (cleaning, enocding, feature engineering)
-    - Dynamic feature generation and model retraining
-    
-- **Advanced Model Optimization**
-    - Bayesian optimization (BayesSearchCV)
+    - Automated data preprocessing (cleaning, encoding, feature engineering)
+    - Modular ML pipelines for training and inference
+    - Model artifact management (`model.joblib`, `metadata.json`)
+    - Dynamic model retraining with updated dataset
+
+- **Machine Learning Optimization**
+    - Bayesian hyperparameter optimization (Optuna)
     - Multiple ML backends (scikit-learn, Keras/TensorFlow)
 
 - **Interactive Web Application**
-    - Responsive UI built with React + Bootstrap
-    - Editable predictions
-    - User-driven retraining workflow
-    - Interactive visualizations with matplotlib & seaborn
-    
-- **Data infrastructure**
-    - SQLite-based persistent storage
-    - Auto-update training/test splits
-    - Incremental data ingestion
+    - Responsive UI built with **React + Bootstrap**
+    - Real-time salary prediction
+    - Interactive salary distribution visualizations (histogram & boxplot)
 
-- **Containerized Development**
-    - Dockerized frontend & backend
-    - One-command setup view ./setup
-    - Works on local machine or LAN network (mobile supported)
+- **Data & Model Management**
+    - Persistent **PostgreSQL database** for salary records
+    - Automatic update of training dataset when new data is added
+    - User-triggered model retraining workflow
+    - Background training process without blocking prediction API
+
+- **API-Based ML Service**
+    - REST API built with **FastAPI**
+    - Prediction endpoint for real-time inference
+    - Model status endpoint for training monitoring
+    - Structured schema validation using **Pydantic**
+
+- **Cloud-Ready Infrastructure**
+    - Dockerized frontend and backend services
+    - Compatible with **Google Cloud Run deployment**
+    - CI/CD pipeline support with **GitHub Actions**
 
 ## 🛠 Tech Stack
 
 | Layer | Tools |
-| :---: | :--- |
-| **Frontend:** | React / Vite / Vitest / Bootstrap|
+| :--- | :--- |
+| **Frontend:** | React / Vite / Axios / Bootstrap|
 | **Backend:** | Python / FastAPI / Uvicorn |
-| **Database:** | SQLite3 / Pandas |
-| **ML / Optimization:** | scikit-learn / Tensorflow / Keras Tuner / BayesSearchCV |
+| **Database:** | PostgreSQL / SQLAlchemy |
+| **ML:** | Scikit-learn / Tensorflow / Optuna / Pandas / Numpy |
+| **visualizations:** | Matplotlib / Seaborn |
+| **Cloud:** | Google Cloud Run / Cloud Storage / Cloud SQL |
 | **DevOps:** | Docker / Git / Bash / uv|
 
 ## 📁 Project Structure
 
-### root
-
-```sh
+```text
 .
-├── README.md
+├── apps/
+│   ├── backend/
+│   └── frontend/
+├── setup                   # a script to help system run
+├── .env.example
+├── .github/
+├── .docs/
 ├── docker-compose.yml
-├── setup               # utility setup script
-├── frontend/           # React application
-├── backend/            # FastAPI server + ML pipeline
-├── readme_images/
-└── .gitignore
+├── LICENSE
+└── README.md
 ```
 
-### Frontend
-
-```sh
-frontend/
-├── README.md
-├── Dockerfile
-├── package.json
-├── package-lock.json
-├── vite.config.js
-├── eslint.config.js
-├── index.html
-├── src/
-├── public/
-├── .gitignore
-└── .dockerignore
-```
-
-### Backend
-
-```sh
-backend/
-├── README.md
-├── Dockerfile
-├── main.py
-├── uv.lock
-├── pyproject.toml
-├── requirements.txt
-├── my_package/
-├── database/
-├── .gitignore
-└── .dockerignore
-```
 
 ## ⚙️ Installation & Setup
 
-### • 🧩 Prerequisites
+### 🐳 Docker:
 
-- **Python:** >=3.10
-
-- **Node.js:** >=20.9.0
-
-- **npm:** >=10.0.0
-
-- (Optional) **[uv](https://github.com/astral-sh/uv/)** (for faster python packages installation)
-
-- (Optional) **[Docker](https://www.docker.com/)** (for containerized setup)
-
-Check version with:
-```sh
-[tool] --version
-```
-Replace `[tool]` with `python`, `node`, `npm`, etc.
-
-### • 🔐 Clone the repo:
-
-```sh
-# SSH:
-git clone git@github.com:StevenHuang41/salary_prediction_web_application.git
-
-# or HTTPS:
+```bash
+# clone the repo
 git clone https://github.com/StevenHuang41/salary_prediction_web_application.git
+cd salary_prediction_web_application
 
-cd salary_prediction
+# setup .env file
+setup env
+
+# modify .env file to your setting
+
+# run docker compose
+setup -dbv
 ```
 
----
+- check on:
+    - Frontend: [http://localhost:3000](http://localhost:3000)
+    - Backend:  [http://localhost:8080/docs](http://localhost:8080/docs)
 
-### • 🧱 Installation & Setup Methods:
-
-- [Manual Installation](#1-️-manual)
-
-- [Docker Installation & Setup](#2--docker) (Recommended)
-
----
-
-### 1. 🕹️ Manual
-
-- #### Frontend
-    ```sh
-    cd frontend
-    npm install
-    ```  
-
-- #### Backend
-    ```sh
-    cd backend
-    pip install -r requirements.txt
-    # or using uv
-    uv sync --locked 
-    ```
-
-- #### Setup
-
-    use `setup` to get __local IP address__ and create `.env.local` files
-    ```sh
-    ./setup
-    ```
-    **Expected result:**
-    ![setup image](./readme_images/setup_image.png)
-
-- #### Start Servers
-
-    open 4 terminals, and run each command respectively.
-
-    - **Frontend test**
-
-        ```sh
-        cd frontend
-        npm test
-        ```
-
-        **Expected result:**
-        ![frontend test](./readme_images/frontend_test.png)
-
-    ---
-
-    - **Frontend server**
-
-        ```sh
-        cd frontend
-        npm run dev
-        ```
-
-        expected result:
-        ![frontend server](./readme_images/frontend_server.png)
-
-    ---
-
-    - **Backend server**
-
-        for basic api request
-
-        ```sh
-        cd backend
-        python main.py 8001
-
-        # or use uv to run
-        uv run main.py 8001
-        ```
-
-        expected result:
-        ![backend server](./readme_images/backend_server.png)
-
-    ---
-
-    - **Backend training server**
-
-        ```sh
-        cd backend
-        python main.py 8000
-
-        # or use uv to run
-        uv run main.py 8000
-        ```
-        expected result:
-        ![training server](./readme_images/training_server.png)
-
----
-
-### 2. 🐳 Docker Setup (Recommended)
-
-```sh
-./setup build
+- more informations about `setup` script:
+```bash
+setup help
 ```
-see `./setup --help` for further setup shell script imformations  
 
-This performs:
+- mobile device can access frontend through `FRONTEND_ORIGINS` url in `.env`:
+```bash
+# salary_prediction_web_application/.env
+...
 
-✅ `.env.local` generation <br>
-✅ `docker compose up --build` <br>
-✅ Fully automated environment setup
+FRONTEND_ORIGINS=http://localhost:3000,http://[local IP address]:3000
 
+...
+```
 
+use `http://[local IP address]:3000` in your mobile browser
 
-**Expected result:**
-![setup build](./readme_images/setup_build.png)
-
+---
 
 ## 🚀 Usage
-
-### 🖥️ Local Machine
-
-- **Frontend:** <http://localhost:3000>
-- **Backend:** <http://localhost:8001/docs>
-- **Training:** <http://localhost:8000/docs>
 
 **UI preview:**
 
 - frontend:
-![browser frontend](./readme_images/browser_frontend.png)
+![browser frontend](./docx/browser_frontend.png)
 
 - backend:
-![browser backend](./readme_images/browser_backend.png)
+![browser backend](./docs/browser_backend.png)
 
 ---
 
 ### 📱 Mobile
 
-- Enter `http://[local IP address]:3000/` in your mobile browser
-    Replace `[local IP address]` with your local machine [IP address](#setup)
-
 **UI preview:**
-![mobile frontend](./readme_images/mobile_frontend.png)
+![mobile frontend](./docs/mobile_frontend.png)
 
 
 ### 📝 App Instructions
@@ -311,7 +182,6 @@ This performs:
 ## 🛠 Development Workflow
 - Git-based feature branches
 - Dockerized reproducible environments
-- ML pipeline modularized in `my_package`
 - Auto-retraining compatible with both scikit-learn and TensorFlow pipelines
 
 ## 🤝 Contributing
