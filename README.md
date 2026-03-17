@@ -1,8 +1,6 @@
-# 📈 Salary Prediction Web Application
+# Salary Prediction Web Application
 
-A **full-stack machine learning application** that predicts salaries through a production-style ML pipeline.
-
-This project includes automated data preprocessing, feature engineering, hyperparameter optimization, model retraining, and interactive prediction UI –– all containerized for scalable deployment.
+A **full-stack machine learning application** that predicts salaries through a production-style ML pipeline with cloud-native deployment.
 
 <p align="center">
     <a href="docs/demo.mp4">
@@ -10,71 +8,72 @@ This project includes automated data preprocessing, feature engineering, hyperpa
     </a>
 </p>
 
-[**Quick Start**](#)
+[**Quick Start**](#docker)
 
-## 🔎 Overview
+[**Public URL**](https://storage.googleapis.com/salary-prediction-frontend/index.html) (might close backend services due to limited budget)
 
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Installation & Setup](#️-installation--setup)
-    - [Manual](#1-️-manual)
-    - [Docker](#2--docker)
-- [Usage](#-usage)
-    - [Local machine](#️-local-machine-access)
-    - [Mobile](#-mobile)
-    - [App Instructions](#-app-instructions)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Credits](#-credits)
 
-## ✨ Features
+## Overview
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Workflow](#workflow)
+    - [System Architecture](#system-architecture)
+    - [Model training process](#model-training-process)
+    - [Model Retrain](#model-retrain)
+    - [Cloud training](#cloud-training)
+- [Installation & Setup](#installation--setup)
+- [Usage](#usage)
+    - [Local machine](#local-machine)
+    - [Mobile](#mobile)
+    - [App Instructions](#app-instructions)
+- [Test](#Test)
+- [TODOs](#TODOs)
+- [Contributing](#contributing)
+- [License](#license)
+- [Credits](#credits)
+
+## Features
 
 - **End-to-End Machine Learning System**
     - Automated data preprocessing (cleaning, encoding, feature engineering)
     - Modular ML pipelines for training and inference
-    - Model artifact management (`model.joblib`, `metadata.json`)
-    - Dynamic model retraining with updated dataset
-
-- **Machine Learning Optimization**
-    - Bayesian hyperparameter optimization (Optuna)
-    - Multiple ML backends (scikit-learn, Keras/TensorFlow)
+    - Model selection on candidate models using cross validation
+    - Bayesian hyperparameter tuning (Optuna)
 
 - **Interactive Web Application**
     - Responsive UI built with **React + Bootstrap**
-    - Real-time salary prediction
-    - Interactive salary distribution visualizations (histogram & boxplot)
+    - Real-time salary prediction with interactive distribution visualizations (histogram & boxplot)
 
 - **Data & Model Management**
     - Persistent **PostgreSQL database** for salary records
-    - Automatic update of training dataset when new data is added
-    - User-triggered model retraining workflow
-    - Background training process without blocking prediction API
+    - User-triggered model retraining workflow when new data is added
+    - Asynchronous background training without blocking inference APIs
 
-- **API-Based ML Service**
-    - REST API built with **FastAPI**
-    - Prediction endpoint for real-time inference
-    - Model status endpoint for training monitoring
-    - Structured schema validation using **Pydantic**
+- **Scalable Backend Architecture**
+    - RESTful API built with **FastAPI** for real-time inference
+    - Decoupled training and inference using **Cloud Run Jobs**
+    - Structured service layer architecture (DataService, ModelService, PredictionService)
 
-- **Cloud-Ready Infrastructure**
-    - Dockerized frontend and backend services
-    - Compatible with **Google Cloud Run deployment**
-    - CI/CD pipeline support with **GitHub Actions**
+- **Cloud-Native Deployment**
+    - Fully containerized system with **Docker**
+    - Deployed on **Google Cloud Run + Cloud SQL + Cloud Storage**
+    - CI/CD-ready pipeline using **GitHub Actions**
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Tools |
 | :--- | :--- |
 | **Frontend:** | React / Vite / Axios / Bootstrap|
 | **Backend:** | Python / FastAPI / Uvicorn |
 | **Database:** | PostgreSQL / SQLAlchemy |
-| **ML:** | Scikit-learn / Tensorflow / Optuna / Pandas / Numpy |
-| **visualizations:** | Matplotlib / Seaborn |
+| **ML:** | Scikit-learn / TensorFlow / Optuna / Pandas / NumPy |
+| **Visualization:** | Matplotlib / Seaborn |
 | **Cloud:** | Google Cloud Run / Cloud Storage / Cloud SQL |
 | **DevOps:** | Docker / Git / Bash / uv|
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 .
@@ -90,10 +89,90 @@ This project includes automated data preprocessing, feature engineering, hyperpa
 └── README.md
 ```
 
+## Workflow
 
-## ⚙️ Installation & Setup
+### System Architecture:
+```text
+User (Browser / Mobile)
+ ⇩
+React Frontend (Cloud Storage)
+ ⇩
+FastAPI Backend (Cloud Run Service)
+ ⇩
+Service layer
+    DataService       ⬄  PostgreSQL (Cloud SQL)
+    PredictionService
+    ModelService
+     ⇩
+ML model (in-memory or Cloud Storage)
+ ⇩
+Response
+ ⇩
+Frontend UI
+```
 
-### 🐳 Docker:
+### Model training process:
+```text
+Raw data
+ ⇩
+Clean data  ➩  Database
+ ⇩          ⬃
+Split data
+ ⇩
+Preprocess data
+    encode
+    feature engineering
+    scale
+ ⇩
+Compare candidate models
+ ⇩
+Hyperparameter tuning on best model
+ ⇩
+Final training
+ ⇩
+Evaluate model
+ ⇩
+Save artifacts
+```
+
+### Model Retrain:
+```text
+User adds new data to Database
+ ⇩
+User triggers retraining
+ ⇩
+Fetch dataset from Database
+ ⇩
+Start training process
+ ⇩
+Save Artifacts
+ ⇩
+Backend loads updated model
+ ⇩
+New prediction flow
+```
+
+### Cloud training:
+```text
+                      User triggers retrain
+                    ⬃                      ⬂
+      Cloud Run Service                  Frontend starts polling
+             ⇩
+    Trigger Cloud Run Job                           ⇩             ⬁ No
+             ⇩
+    Cloud Run Job starts                Check if model finished training
+    (ephemeral container)
+             ⇩                                       ⇩  yes
+ Save artifacts to Cloud Storage
+             ⇩                         Reload artifacts from Cloud Storage request
+  Job finishes (container dies)
+             ⇩                          ⬃
+Cloud Run Service load new artifacts
+```
+
+## Installation & Setup
+
+### Docker:
 
 ```bash
 # clone the repo
@@ -113,78 +192,78 @@ setup -dbv
     - Frontend: [http://localhost:3000](http://localhost:3000)
     - Backend:  [http://localhost:8080/docs](http://localhost:8080/docs)
 
+
+- mobile device can access frontend through local IP address:
+```bash
+setup
+# local IP address: xxx.xxx.xxx.xxx
+# Updated .env with LAN IP
+```
+
+use `http://[local IP address]:3000` in your mobile browser
+
 - more informations about `setup` script:
 ```bash
 setup help
 ```
 
-- mobile device can access frontend through `FRONTEND_ORIGINS` url in `.env`:
-```bash
-# salary_prediction_web_application/.env
-...
-
-FRONTEND_ORIGINS=http://localhost:3000,http://[local IP address]:3000
-
-...
-```
-
-use `http://[local IP address]:3000` in your mobile browser
-
 ---
 
-## 🚀 Usage
+## Usage
+
+### Local Machine
 
 **UI preview:**
 
 - frontend:
-![browser frontend](./docx/browser_frontend.png)
+![browser frontend](./docs/browser_frontend.png)
 
 - backend:
 ![browser backend](./docs/browser_backend.png)
 
 ---
 
-### 📱 Mobile
+### Mobile
 
 **UI preview:**
 ![mobile frontend](./docs/mobile_frontend.png)
 
+### App Instructions
 
-### 📝 App Instructions
-
-- Fill out the form -> click **Predict Salary** button
-![instruction1](./readme_images/instruction1.gif)
+- Fill out the form -> click **Predict** button
+![instruction1](./docs/type_form_predict.gif)
 
 - Click **see detail** button for extended options
-![instruction2](./readme_images/instruction2.gif)
+![instruction2](./docs/see_detail.gif)
 
 - Change predict value using keyborad or slider
-![instruction3](./readme_images/instruction3.gif)
+![instruction3](./docs/toggle_value.gif)
 
 - Click **Add Data** button to store changed prediction
-![instruction4](./readme_images/instruction4.gif)
+![instruction4](./docs/add_data.gif)
 
 - Click **Retrain Model** button to train on new records
-![instruction6](./readme_images/instruction5.gif)
-
-- After retraining, prediction value changes, and the number of records in Train and Test dataset change
-![instruction7](./readme_images/instruction6.png)
+After retraining, prediction value changes, and the number of records in Train and Test dataset change
+![instruction6](./docs/retrain_predict.gif)
 
 - Click **Reset Database** button to clear added data in database, and click
 **Retrain Model** button again to retrain model with original data.
-![instruction8](./readme_images/instruction7.gif)
+![instruction7](./docs/reset_model.gif)
 
-## 📋 TODO
+## Test
+
+- Backend:
+![backend_test](./docs/backend_test.png)
+
+- Frontend:
+![frontend_test](./docs/frontend_test.png)
+
+## TODOs
 
 - Allow input of job title by keyborad (accept unknown jobs).
-- A chatbot for user asking questions.
+- Add an AI assistant chatbox for user interaction
 
-## 🛠 Development Workflow
-- Git-based feature branches
-- Dockerized reproducible environments
-- Auto-retraining compatible with both scikit-learn and TensorFlow pipelines
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork
 2. Clone
@@ -202,11 +281,11 @@ use `http://[local IP address]:3000` in your mobile browser
    ```
 6. Create a Pull Request.
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](./LICENSE).
 
-## 👏 Credits
+## Credits
 
 Thanks to all contributors!
 
