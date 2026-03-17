@@ -8,7 +8,7 @@ A **full-stack machine learning application** that predicts salaries through a p
     </a>
 </p>
 
-[**Quick Start**](#docker)
+[**Quick Start**](#installation--setup)
 
 [**Public URL**](https://storage.googleapis.com/salary-prediction-frontend/index.html) (might close backend services due to limited budget)
 
@@ -28,8 +28,8 @@ A **full-stack machine learning application** that predicts salaries through a p
     - [Local machine](#local-machine)
     - [Mobile](#mobile)
     - [App Instructions](#app-instructions)
-- [Test](#Test)
-- [TODOs](#TODOs)
+- [Testing](#testing)
+- [TODOs](#todos)
 - [Contributing](#contributing)
 - [License](#license)
 - [Credits](#credits)
@@ -172,8 +172,13 @@ Cloud Run Service load new artifacts
 
 ## Installation & Setup
 
-### Docker:
+### Prerequisites
+- Docker: >=29
+- npm: >=11.9.0
+- node: >=25.6.1
+- python: >=3.13
 
+### Clone repo
 ```bash
 # clone the repo
 git clone https://github.com/StevenHuang41/salary_prediction_web_application.git
@@ -250,12 +255,24 @@ After retraining, prediction value changes, and the number of records in Train a
 **Retrain Model** button again to retrain model with original data.
 ![instruction7](./docs/reset_model.gif)
 
-## Test
+## Testing
 
 - Backend:
+```bash
+cd apps/backend
+# get into environment and install dependencies
+pytest --verbosity=0
+```
+Result:
 ![backend_test](./docs/backend_test.png)
 
 - Frontend:
+```bash
+cd apps/frontend
+npm ci
+npm test
+```
+Result:
 ![frontend_test](./docs/frontend_test.png)
 
 ## TODOs
