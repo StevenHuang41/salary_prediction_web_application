@@ -12,7 +12,7 @@ on:
       - main
 
 env:
-  IMAGE_OWNER: stevenhuang41
+  IMAGE_OWNER: yenjung41
   IMAGE_REPO: salary-backend
 
 jobs:
@@ -55,19 +55,23 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
 
-      - name: Login to GHCR
+      - name: login to docker hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ env.IMAGE_OWNER }}
+          password: ${{ secrets.DOCKER_PAT }}
 
-      - name: Build and Push
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: build and push
         uses: docker/build-push-action@v5
         with:
           context: apps/backend
           push: true
-          tags: ghcr.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+          tags: |
+            docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
+            docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -81,11 +85,10 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT }}
 
-
       - name: deploy cloud run
         run: |
           gcloud run deploy salary-backend \
-            --image ghcr.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
+            --image docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
             --region asia-east1 \
             --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
             --set-env-vars I_AM=backend \
@@ -98,14 +101,13 @@ jobs:
             --memory 2Gi \
             --concurrency 2 \
             --min-instances 0 \
-            --max-instances 2 \
-            # --allow-unauthenticated
+            --max-instances 2
 
 
       - name: Update Cloud Run Job
         run: |
           gcloud run jobs update ${{ secrets.TRAINING_JOB_NAME }} \
-            --image ghcr.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
+            --image docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
             --region asia-east1 \
             --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
             --set-env-vars I_AM=jobrun \
