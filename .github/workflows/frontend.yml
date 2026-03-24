@@ -57,7 +57,7 @@ jobs:
       - name: build frontend
         run: |
           VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }} npm run build
-          
+
       - name: GCP auth
         uses: google-github-actions/auth@v2
         with:
@@ -70,12 +70,14 @@ jobs:
 
       - name: upload dist/ to cloud storage
         run: |
-          gsutil -m rsync -d -r dist gs://salary-prediction-frontend
-
+          gcloud storage rsync -r dist gs://salary-prediction-frontend --delete-unmatched-destination-objects
+          
       - name: cache assets
         run: |
-          gsutil -m setmeta -h "Cache-Control:public,max-age=31536000,immutable" gs://salary-prediction-frontend/assets/**
+          gcloud storage objects update gs://salary-prediction-frontend/assets/** \
+          --cache-control="public,max-age=31536000,immutable"
 
-      - name: Disable cache for index.html
+      - name: disable cache for index.html
         run: |
-          gsutil setmeta -h "Cache-Control:no-cache" gs://salary-prediction-frontend/index.html
+          gcloud storage objects update gs://salary-prediction-frontend/index.html \
+          --cache-control="no-cache"
