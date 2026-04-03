@@ -27,27 +27,34 @@ class ModelService:
         self,
         target: Literal["model", "metadata", "status", "all"] = "all",
     ):
-        client = storage.Client()
-        bucket = client.bucket(settings.model_bucket)
+        try :
+            client = storage.Client()
+            bucket = client.bucket(settings.model_bucket)
 
-        model_blob = bucket.blob("model.joblib")
-        metadata_blob = bucket.blob("metadata.json")
-        status_blob = bucket.blob("status.json")
+            model_blob = bucket.blob("model.joblib")
+            metadata_blob = bucket.blob("metadata.json")
+            status_blob = bucket.blob("status.json")
 
-        if not model_blob.exists() \
-            or not metadata_blob.exists() \
-            or not status_blob.exists():
-            raise FileNotFoundError("Model artifacts not found in cloud storage")
+            if not model_blob.exists() \
+                or not metadata_blob.exists() \
+                or not status_blob.exists():
+                raise FileNotFoundError("Model artifacts not found in cloud storage")
 
-        if target == "model":
-            model_blob.download_to_filename(settings.model_file)
-        elif target == "metadata":
-            metadata_blob.download_to_filename(settings.metadata_file)
-        elif target == "status":
-            status_blob.download_to_filename(settings.status_file)
-        else :
-            model_blob.download_to_filename(settings.model_file)
-            metadata_blob.download_to_filename(settings.metadata_file)
+            if target == "model":
+                model_blob.download_to_filename(settings.model_file)
+            elif target == "metadata":
+                metadata_blob.download_to_filename(settings.metadata_file)
+            elif target == "status":
+                status_blob.download_to_filename(settings.status_file)
+            else :
+                model_blob.download_to_filename(settings.model_file)
+                metadata_blob.download_to_filename(settings.metadata_file)
+
+            return True
+
+        except Exception as e:
+            print(f"Download fails: {e}")
+            return False
 
 
     def _upload_cloud_artifacts(
@@ -63,16 +70,40 @@ class ModelService:
         client = storage.Client()
         bucket = client.bucket(settings.model_bucket)
 
-        if target == "model":
+        if target in ("model", "all"):
             bucket.blob("model.joblib").upload_from_filename(settings.model_file)
-        elif target == "metadata":
-            bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
-        elif target == "status":
-            bucket.blob("status.json").upload_from_filename(settings.status_file)
-        else :
-            bucket.blob("model.joblib").upload_from_filename(settings.model_file)
+
+        if target in ("metadata", "all"):
             bucket.blob("metadata.json").upload_from_filename(settings.metadata_file)
 
+        if target == "status":
+            bucket.blob("status.json").upload_from_filename(settings.status_file)
+
+    
+    def load_if_need(self):
+        if self.model is not None:
+            return
+    
+        try :
+            if settings.use_cloud:
+                self._download_cloud_artifacts()
+
+            if not settings.model_file.exists():
+                print("Model file not found")
+                return
+                
+            self.model = joblib.load(settings.model_file)
+
+            if settings.metadata_file.exists():
+                with open(settings.metadata_file, "r") as f:
+                    self.metadata = json.load(f)
+            
+            print("Model loaded")
+
+        except Exception as e:
+            print(f"Model fails loading: {e}")
+            self.model = None
+    
 
     def model_is_training(self) -> bool:
         if not settings.use_cloud:
@@ -101,11 +132,15 @@ class ModelService:
 
 
     def predict(self, df):
+        self.load_if_need()
+        if self.model is None:
+            raise RuntimeError("Model is not available")
+            
         return self.model.predict(df) # type: ignore
 
 
     def set_training_status(self, status: str):
-        self.is_training = True if status == "training" else False
+        self.is_training = (status == "training")
 
         with open(settings.status_file, "w") as f:
             json.dump({"status": status}, f, indent=4)
@@ -150,6 +185,9 @@ class ModelService:
             self.is_training = True
             self._run_training_job(db)
             self.set_training_status("ready")
+
+            self.model = None
+            self.load_if_need()
         else :
             self.set_training_status("training")
             self._call_training_api()

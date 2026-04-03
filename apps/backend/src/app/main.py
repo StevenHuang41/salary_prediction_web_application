@@ -13,17 +13,21 @@ from app.services.model_service import model_service
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try :
+        print("Starting lightweight initialization ...")
         init_db()
         db = SessionLocal()
         repo = SalaryRepository()
 
         if repo.count(db) == 0:
+            print("Seeding initial data ...")
             data_service.seed(db)
 
-        model_service.load_artifacts()
-        data_service.load(db)
+        # model_service.load_artifacts()
+        # data_service.load(db)
 
         db.close()
+        print("Startup completed")
+        
     except Exception as e:
         print("Startup DB init skipped:", e)
 
@@ -36,6 +40,7 @@ def create_app() -> FastAPI:
     )
 
     print("Frontend Origins:", settings.frontend_origins_list)
+    
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
