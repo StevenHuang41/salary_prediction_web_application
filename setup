@@ -74,12 +74,21 @@ def docker_build():
     print(f"API docs: http://{ip}:8080\n")
     print("=" * 50)
     subprocess.run(
-        ["docker", "compose", "up", "--build", "--force-recreate"],
+        [
+            "docker", "compose",
+            "-f", "infra/local/docker-compose.yaml",
+            "--env-file", ".env",
+            "up", "--build", "--force-recreate"
+        ],
     )
 
 
 def docker_down(*, clean_db_volume=False):
-    cli_list = ["docker", "compose", "down"]
+    cli_list = [
+        "docker", "compose",
+        "-f", "infra/local/docker-compose.yaml",
+        "down"
+    ]
     if clean_db_volume:
         cli_list.append("-v")
 

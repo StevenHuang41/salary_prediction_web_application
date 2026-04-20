@@ -10,7 +10,7 @@ A **full-stack machine learning application** that predicts salaries through a p
 
 [**Quick Start**](#installation--setup)
 
-[**Public URL**](https://storage.googleapis.com/salary-prediction-frontend/index.html) (might close backend services due to limited budget)
+[**Public URL**](https://storage.googleapis.com/salary-prediction-frontend/index.html) (closed services due to limited budget)
 
 
 ## Overview
