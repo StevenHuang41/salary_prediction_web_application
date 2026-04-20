@@ -120,20 +120,39 @@ jobs:
       #       --min-instances 0 \
       #       --max-instances 2
 
-
-      - name: Update Cloud Run Job
+      - name: deploy cloud job via IaC
         run: |
-          gcloud run jobs update ${{ secrets.TRAINING_JOB_NAME }} \
-            --image docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
-            --region asia-east1 \
-            --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
-            --set-env-vars I_AM=jobrun \
-            --set-env-vars USE_CLOUD=true \
-            --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
-            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --cpu 8 \
-            --memory 16Gi \
-            --task-timeout 3600s \
-            --max-retries 1 \
-            --tasks 1 \
-            --parallelism 1
+          NEW_TRAINING_JOB_NAME="${{ secrets.TRAINING_JOB_NAME }}"
+          NEW_CLOUDSQL="${{ secrets.CLOUDSQL }}"
+          NEW_IMAGE_BACKEND="docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }}"
+          NEW_MODEL_BUCKET="${{ secrets.MODEL_BUCKET }}"
+          NEW_DATABASE_URL="${{ secrets.DATABASE_URL }}"
+
+          sed -i "s|TRAINING_JOB_NAME_IaC|${NEW_TRAINING_JOB_NAME}|g" infra/gcp/cloud-job.yaml
+          sed -i "s|CLOUDSQL_IaC|${NEW_CLOUDSQL}|g" infra/gcp/cloud-job.yaml
+          sed -i "s|IMAGE_BACKEND_IaC|${NEW_IMAGE_BACKEND}|g" infra/gcp/cloud-job.yaml
+          sed -i "s|MODEL_BUCKET_IaC|${NEW_MODEL_BUCKET}|g" infra/gcp/cloud-job.yaml
+          sed -i "s|DATABASE_URL_IaC|${NEW_DATABASE_URL}|g" infra/gcp/cloud-job.yaml
+
+          gcloud run jobs replace infra/gcp/cloud-job.yaml \
+            --region asia-east1
+
+
+
+
+      # - name: Update Cloud Run Job
+      #   run: |
+      #     gcloud run jobs update ${{ secrets.TRAINING_JOB_NAME }} \
+      #       --image docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
+      #       --region asia-east1 \
+      #       --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
+      #       --set-env-vars I_AM=jobrun \
+      #       --set-env-vars USE_CLOUD=true \
+      #       --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
+      #       --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+      #       --cpu 8 \
+      #       --memory 16Gi \
+      #       --task-timeout 3600s \
+      #       --max-retries 1 \
+      #       --tasks 1 \
+      #       --parallelism 1

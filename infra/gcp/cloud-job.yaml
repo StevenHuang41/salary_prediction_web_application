@@ -1,0 +1,38 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: TRAINING_JOB_NAME_IaC
+  labels:
+    cloud.googleapis.com/location: asia-east1
+spec: # layer 1: job spec
+  template: 
+    spec: # layer 2: task spec
+      taskCount: 1
+      parallelism: 1
+      template: 
+        metadata:
+          annotations:
+            run.googleapis.com/cloudsql-instances: CLOUDSQL_IaC
+        spec: # layer 3: container spec
+          containers:
+          - image: IMAGE_BACKEND_IaC
+            command:
+              - python
+            args:
+              - -m
+              - src.app.services.model_service
+            resources:
+              limits:
+                cpu: '8'
+                memory: 16Gi
+            env:
+            - name: I_AM
+              value: jobrun
+            - name: USE_CLOUD
+              value: 'true'
+            - name: MODEL_BUCKET
+              value: MODEL_BUCKET_IaC
+            - name: DATABASE_URL
+              value: DATABASE_URL_IaC
+          maxRetries: 1
+          timeoutSeconds: '3600'
