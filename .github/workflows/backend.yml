@@ -5,10 +5,12 @@ on:
     paths:
       - "apps/backend/**"
       - ".github/workflows/backend.yml"
+      - "infra"
   pull_request:
     paths:
       - "apps/backend/**"
       - ".github/workflows/backend.yml"
+      - "infra"
 
 env:
   IMAGE_OWNER: yenjung41
@@ -136,10 +138,6 @@ jobs:
 
           gcloud run jobs replace infra/gcp/cloud-job.yaml \
             --region asia-east1
-
-
-
-
       # - name: Update Cloud Run Job
       #   run: |
       #     gcloud run jobs update ${{ secrets.TRAINING_JOB_NAME }} \

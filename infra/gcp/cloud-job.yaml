@@ -4,16 +4,21 @@ metadata:
   name: TRAINING_JOB_NAME_IaC
   labels:
     cloud.googleapis.com/location: asia-east1
-spec: # layer 1: job spec
-  template: 
-    spec: # layer 2: task spec
+spec:
+  # layer 1: job spec
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/cloudsql-instances: CLOUDSQL_IaC
+    spec:
+      # task setting
       taskCount: 1
       parallelism: 1
-      template: 
-        metadata:
-          annotations:
-            run.googleapis.com/cloudsql-instances: CLOUDSQL_IaC
-        spec: # layer 3: container spec
+
+      template:
+      # layer 2: task spec
+        spec:
+          # layer 3: container spec
           containers:
           - image: IMAGE_BACKEND_IaC
             command:
@@ -34,5 +39,6 @@ spec: # layer 1: job spec
               value: MODEL_BUCKET_IaC
             - name: DATABASE_URL
               value: DATABASE_URL_IaC
+
           maxRetries: 1
           timeoutSeconds: '3600'
