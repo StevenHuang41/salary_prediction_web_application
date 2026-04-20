@@ -1,19 +1,20 @@
 {
-    "model_name": "HGBR",
+    "model_name": "xgb",
     "params": {
-        "learning_rate": 0.03574712922600244,
-        "max_iter": 481,
-        "max_depth": 8,
-        "min_samples_leaf": 26,
-        "l2_regularization": 0.7800932022121826
+        "learning_rate": 0.04345454109729477,
+        "max_depth": 5,
+        "n_estimators": 345,
+        "subsample": 0.6557975442608167,
+        "colsample_bytree": 0.7168578594140873,
+        "reg_lambda": 1.8318092164684585
     },
-    "mse": 335366482.02040845,
-    "mae": 12506.480853420058,
-    "rmse": 18313.014006995367,
-    "r2": 0.8790577541313352,
+    "mse": 275922697.145025,
+    "mae": 11291.142887342437,
+    "rmse": 16610.921020371658,
+    "r2": 0.8989535988029748,
     "n_train": 1426,
     "n_test": 357,
     "data_size": 1783,
-    "created_at": "03/April/2026 Fri 05:30 PM",
-    "duration": "233.36 s"
+    "created_at": "20/April/2026 Mon 08:22 PM",
+    "duration": "86.51 s"
 }

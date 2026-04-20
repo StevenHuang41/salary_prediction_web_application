@@ -1,0 +1,56 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+    run.googleapis.com/maxScale: '20'
+  labels:
+    cloud.googleapis.com/location: asia-east1
+  name: salary-backend
+  namespace: '455418163633'
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '2'
+        run.googleapis.com/client-name: gcloud
+        run.googleapis.com/client-version: 562.0.0
+        run.googleapis.com/cloudsql-instances: CLOUDSQL_IaC
+        run.googleapis.com/startup-cpu-boost: 'true'
+      labels:
+        run.googleapis.com/startupProbeType: Default
+    spec:
+      containerConcurrency: 2
+      containers:
+      - env:
+        - name: I_AM
+          value: backend
+        - name: USE_CLOUD
+          value: 'true'
+        - name: MODEL_BUCKET
+          value: MODEL_BUCKET_IaC
+        - name: DATABASE_URL
+          value: DATABASE_URL_IaC
+        - name: GCP_PROJECT
+          value: GCP_PROJECT_IaC
+        - name: TRAINING_JOB_NAME
+          value: TRAINING_JOB_NAME_IaC
+        image: IMAGE_BACKEND_IaC
+        ports:
+        - containerPort: 8080
+          name: http1
+        resources:
+          limits:
+            cpu: '4'
+            memory: 2Gi
+        startupProbe:
+          failureThreshold: 1
+          periodSeconds: 240
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 240
+      timeoutSeconds: 300
+  traffic:
+  - latestRevision: true
+    percent: 100

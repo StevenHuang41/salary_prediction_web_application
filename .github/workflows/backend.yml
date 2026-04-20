@@ -2,14 +2,13 @@ name: Backend CI/CD
 
 on:
   push:
-    branches:
-      - main
     paths:
       - "apps/backend/**"
       - ".github/workflows/backend.yml"
   pull_request:
-    branches:
-      - main
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/backend.yml"
 
 env:
   IMAGE_OWNER: yenjung41
@@ -37,14 +36,14 @@ jobs:
         run: uv python install 3.11
 
       - name: install dev-dependencies
-        run: uv sync
+        run: uv sync --frozen
 
       - name: run tests
         run: uv run pytest
 
   deploy:
     needs: test
-
+    if: github.ref == "refs/heads/main" && github.event_name == "push"
     runs-on: ubuntu-latest
 
     permissions:
@@ -85,23 +84,41 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT }}
 
-      - name: deploy cloud run
+      - name: deploy cloud run via IaC
         run: |
-          gcloud run deploy salary-backend \
-            --image docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
-            --region asia-east1 \
-            --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
-            --set-env-vars I_AM=backend \
-            --set-env-vars USE_CLOUD=true \
-            --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
-            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --set-env-vars GCP_PROJECT=${{ secrets.GCP_PROJECT }} \
-            --set-env-vars TRAINING_JOB_NAME=${{ secrets.TRAINING_JOB_NAME }} \
-            --cpu 4 \
-            --memory 2Gi \
-            --concurrency 2 \
-            --min-instances 0 \
-            --max-instances 2
+          NEW_CLOUDSQL="${{ secrets.CLOUDSQL }}"
+          NEW_MODEL_BUCKET="${{ secrets.MODEL_BUCKET }}"
+          NEW_DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          NEW_GCP_PROJECT="${{ secrets.GCP_PROJECT }}"
+          NEW_TRAINING_JOB_NAME="${{ secrets.TRAINING_JOB_NAME }}"
+          NEW_IMAGE_BACKEND="docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }}"
+
+          sed -i "s|CLOUDSQL_IaC|${NEW_CLOUDSQL}|g" infra/gcp/cloud-run-backend.yaml
+          sed -i "s|MODEL_BUCKET_IaC|${NEW_MODEL_BUCKET}|g" infra/gcp/cloud-run-backend.yaml
+          sed -i "s|DATABASE_URL_IaC|${NEW_DATABASE_URL}|g" infra/gcp/cloud-run-backend.yaml
+          sed -i "s|GCP_PROJECT_IaC|${NEW_GCP_PROJECT}|g" infra/gcp/cloud-run-backend.yaml
+          sed -i "s|TRAINING_JOB_NAME_IaC|${NEW_TRAINING_JOB_NAME}|g" infra/gcp/cloud-run-backend.yaml
+          sed -i "s|IMAGE_BACKEND_IaC|${NEW_IMAGE_BACKEND}|g" infra/gcp/cloud-run-backend.yaml
+
+          gcloud run services replace infra/gcp/cloud-run-backend.yaml \
+            --region asia-east1
+      # - name: deploy cloud run
+      #   run: |
+      #     gcloud run deploy salary-backend \
+      #       --image docker.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPO }}:${{ github.sha }} \
+      #       --region asia-east1 \
+      #       --add-cloudsql-instances ${{ secrets.CLOUDSQL }} \
+      #       --set-env-vars I_AM=backend \
+      #       --set-env-vars USE_CLOUD=true \
+      #       --set-env-vars MODEL_BUCKET=${{ secrets.MODEL_BUCKET }} \
+      #       --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+      #       --set-env-vars GCP_PROJECT=${{ secrets.GCP_PROJECT }} \
+      #       --set-env-vars TRAINING_JOB_NAME=${{ secrets.TRAINING_JOB_NAME }} \
+      #       --cpu 4 \
+      #       --memory 2Gi \
+      #       --concurrency 2 \
+      #       --min-instances 0 \
+      #       --max-instances 2
 
 
       - name: Update Cloud Run Job
