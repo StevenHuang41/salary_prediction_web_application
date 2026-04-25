@@ -35,6 +35,7 @@ The application supports interactive salary prediction, storing user-added salar
 - [Usage](#usage)
 - [Testing](#testing)
 - [CI/CD](#cicd)
+- [Future work](#future-work)
 - [License](#license)
 
 ---
@@ -282,6 +283,10 @@ Reset database and retrain:
 ---
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 0c45c6a (fix typo in readme, and the test function in test_trainer.py)
 ### Mobile
 
 **UI preview:**
@@ -309,8 +314,12 @@ After retraining, prediction value changes, and the number of records in Train a
 **Retrain Model** button again to retrain model with original data.
 ![instruction7](./docs/reset_model.gif)
 
+<<<<<<< HEAD
 =======
 >>>>>>> 63c3f91 (refine readme due to lask of gcp budget)
+=======
+>>>>>>> f9ef82f (fix typo in readme, and the test function in test_trainer.py)
+>>>>>>> 0c45c6a (fix typo in readme, and the test function in test_trainer.py)
 ## Testing
 
 ### Backend
@@ -335,12 +344,7 @@ npm run test -- --run
 
 Evidence:
 
-<<<<<<< HEAD
-- Allow input of job title by keyboard (accept unknown jobs).
-- Add an AI assistant chatbox for user interaction
-=======
 ![Frontend tests](./docs/frontend_test.png)
->>>>>>> 63c3f91 (refine readme due to lask of gcp budget)
 
 ---
 
@@ -355,9 +359,18 @@ The backend deployment uses YAML manifests under `infra/gcp/` so cloud runtime c
 
 ---
 
+## Future Work
+
+- Allow input of job title by keyboard (accept unknown jobs).
+- Add an AI assistant chatbox for user interaction
+
+---
+
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
+
+---
 
 ## Credits
 
