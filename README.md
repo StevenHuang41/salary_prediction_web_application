@@ -241,7 +241,7 @@ setup help
 - Click **see detail** button for extended options
 ![instruction2](./docs/see_detail.gif)
 
-- Change predict value using keyborad or slider
+- Change predicted value using keyboard or slider
 ![instruction3](./docs/toggle_value.gif)
 
 - Click **Add Data** button to store changed prediction
@@ -277,7 +277,7 @@ Result:
 
 ## TODOs
 
-- Allow input of job title by keyborad (accept unknown jobs).
+- Allow input of job title by keyboard (accept unknown jobs).
 - Add an AI assistant chatbox for user interaction
 
 ## Contributing

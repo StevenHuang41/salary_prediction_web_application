@@ -39,7 +39,7 @@ def test_trainer_train(mock_compare, mock_tune, mock_registry, sample_df: pd.Dat
 
     assert trainer.best_model_name == "linear"
     assert trainer.model is mock_model_instance
-    mock_model_instance.fit.asser_called_once()
+    mock_model_instance.fit.assert_called_once()
     assert trainer.mse is not None
 
 
