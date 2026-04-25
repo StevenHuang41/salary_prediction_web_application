@@ -1,7 +1,25 @@
+# Docker/build metadata
 Dockerfile
+.dockerignore
+.git/
 .gitignore
 
+# Dependencies and generated output
 build/
 coverage/
 node_modules/
 dist/
+
+# Local env/secrets
+.env
+.env.local
+.env.*.local
+
+# Logs/caches
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vite/
+
+# OS
+.DS_Store

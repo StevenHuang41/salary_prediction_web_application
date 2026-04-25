@@ -1,7 +1,21 @@
+# OS/editor noise
 .DS_Store
-__pycache__
 
-.env
-
+# Python
+__pycache__/
+*.py[cod]
 *.egg-info/
+.pytest_cache/
+.venv/
+
+# Node/frontend generated files
+node_modules/
+dist/
+build/
+coverage/
+
+# Local environment and secrets
+.env
+.env.local
+.env.*.local
 artifacts_registry_key.json

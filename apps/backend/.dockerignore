@@ -1,11 +1,17 @@
+# Docker/build metadata
+Dockerfile
+.dockerignore
+
 # python
-.venv
-__pycache__
+.venv/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
 
 # git
+.git/
 .gitignore
 
 # notebooks
@@ -16,7 +22,15 @@ __pycache__
 
 # tests
 tests/
-.pytest*
+.pytest_cache/
+.coverage
+htmlcov/
 
-# node
-node_modules
+# local env/secrets
+.env
+.env.*
+artifacts_registry_key.json
+
+# tooling caches
+.mypy_cache/
+.ruff_cache/
