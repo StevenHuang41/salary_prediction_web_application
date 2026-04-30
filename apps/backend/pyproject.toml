@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI backend for a production-style salary prediction ML application with training, inference, PostgreSQL persistence, and GCP artifact support"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.129.0",
