@@ -268,7 +268,7 @@ Change prediction inputs with keyboard or slider:
 
 ![Toggle value](./docs/toggle_value.gif)
 
-Add a prediction record:
+Add a new record:
 
 ![Add data](./docs/add_data.gif)
 
@@ -282,44 +282,6 @@ Reset database and retrain:
 
 ---
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 0c45c6a (fix typo in readme, and the test function in test_trainer.py)
-### Mobile
-
-**UI preview:**
-![mobile frontend](./docs/mobile_frontend.png)
-
-### App Instructions
-
-- Fill out the form -> click **Predict** button
-![instruction1](./docs/type_form_predict.gif)
-
-- Click **see detail** button for extended options
-![instruction2](./docs/see_detail.gif)
-
-- Change predicted value using keyboard or slider
-![instruction3](./docs/toggle_value.gif)
-
-- Click **Add Data** button to store changed prediction
-![instruction4](./docs/add_data.gif)
-
-- Click **Retrain Model** button to train on new records
-After retraining, prediction value changes, and the number of records in Train and Test dataset change
-![instruction6](./docs/retrain_predict.gif)
-
-- Click **Reset Database** button to clear added data in database, and click
-**Retrain Model** button again to retrain model with original data.
-![instruction7](./docs/reset_model.gif)
-
-<<<<<<< HEAD
-=======
->>>>>>> 63c3f91 (refine readme due to lask of gcp budget)
-=======
->>>>>>> f9ef82f (fix typo in readme, and the test function in test_trainer.py)
->>>>>>> 0c45c6a (fix typo in readme, and the test function in test_trainer.py)
 ## Testing
 
 ### Backend
