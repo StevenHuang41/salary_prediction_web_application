@@ -1,47 +1,47 @@
-apiVersion: serving.knative.dev/v1
-kind: Service
-metadata:
-  name: salary-backend
-  annotations:
-    run.googleapis.com/ingress: all
-spec:
-  template:
-    metadata:
-      annotations:
-        autoscaling.knative.dev/maxScale: '2'
-        run.googleapis.com/cloudsql-instances: CLOUDSQL_IaC
-        run.googleapis.com/startup-cpu-boost: 'true'
-    spec:
-      containerConcurrency: 2
-      timeoutSeconds: 300
-      containers:
-      - image: IMAGE_BACKEND_IaC
-        env:
-        - name: I_AM
-          value: backend
-        - name: USE_CLOUD
-          value: 'true'
-        - name: MODEL_BUCKET
-          value: MODEL_BUCKET_IaC
-        - name: DATABASE_URL
-          value: DATABASE_URL_IaC
-        - name: GCP_PROJECT
-          value: GCP_PROJECT_IaC
-        - name: TRAINING_JOB_NAME
-          value: TRAINING_JOB_NAME_IaC
-        resources:
-          limits:
-            cpu: '4'
-            memory: 2Gi
-        ports:
-        - containerPort: 8080
-        startupProbe:
-          tcpSocket:
-            port: 8080
-
-          periodSeconds: 240
-          failureThreshold: 1
-          timeoutSeconds: 240
-  traffic:
-  - latestRevision: true
-    percent: 100
+# apiVersion: serving.knative.dev/v1
+# kind: Service
+# metadata:
+#   name: salary-backend
+#   annotations:
+#     run.googleapis.com/ingress: all
+# spec:
+#   template:
+#     metadata:
+#       annotations:
+#         autoscaling.knative.dev/maxScale: '2'
+#         run.googleapis.com/cloudsql-instances: CLOUDSQL_IaC
+#         run.googleapis.com/startup-cpu-boost: 'true'
+#     spec:
+#       containerConcurrency: 2
+#       timeoutSeconds: 300
+#       containers:
+#       - image: IMAGE_BACKEND_IaC
+#         env:
+#         - name: I_AM
+#           value: backend
+#         - name: USE_CLOUD
+#           value: 'true'
+#         - name: MODEL_BUCKET
+#           value: MODEL_BUCKET_IaC
+#         - name: DATABASE_URL
+#           value: DATABASE_URL_IaC
+#         - name: GCP_PROJECT
+#           value: GCP_PROJECT_IaC
+#         - name: TRAINING_JOB_NAME
+#           value: TRAINING_JOB_NAME_IaC
+#         resources:
+#           limits:
+#             cpu: '4'
+#             memory: 2Gi
+#         ports:
+#         - containerPort: 8080
+#         startupProbe:
+#           tcpSocket:
+#             port: 8080
+#
+#           periodSeconds: 240
+#           failureThreshold: 1
+#           timeoutSeconds: 240
+#   traffic:
+#   - latestRevision: true
+#     percent: 100
